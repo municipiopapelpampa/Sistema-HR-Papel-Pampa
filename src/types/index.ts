@@ -20,6 +20,8 @@ export type EstadoDerivacion =
   | 'OBSERVADA'
   | 'RECHAZADA'
 
+export type TipoDestinatario = 'DIRECCION' | 'PERSONA'
+
 // ============================================
 // ENTIDADES
 // ============================================
@@ -83,6 +85,7 @@ export interface HojaRuta {
   destinatario_nombre: string | null
   destinatario_cargo: string | null
   destinatario_direccion_id: string | null
+  tipo_destinatario: TipoDestinatario
   tipo_original: boolean
   tipo_urgente: boolean
   tipo_copia: boolean
@@ -97,6 +100,14 @@ export interface HojaRuta {
   updated_at: string
 }
 
+export interface HojaRutaConRelaciones extends HojaRuta {
+  remitente?: Usuario | null
+  direccion_actual?: Direccion | null
+  destinatario_direccion?: Direccion | null
+  usuario_actual?: Usuario | null
+  documentos?: Documento[]
+}
+
 export interface Derivacion {
   id: string
   hoja_ruta_id: string
@@ -105,6 +116,7 @@ export interface Derivacion {
   destinatario_cargo: string | null
   destinatario_direccion_id: string | null
   destinatario_usuario_id: string | null
+  tipo_destinatario: TipoDestinatario
   numero_registro_interno: string | null
   fecha_ingreso: string | null
   fecha_remision: string | null
@@ -122,6 +134,18 @@ export interface Derivacion {
   created_at: string
 }
 
+export interface Documento {
+  id: string
+  hoja_ruta_id: string
+  derivacion_id: string | null
+  nombre_original: string
+  nombre_storage: string
+  tipo_mime: string | null
+  tamano_bytes: number | null
+  subido_por: string | null
+  created_at: string
+}
+
 export interface Notificacion {
   id: string
   usuario_id: string
@@ -131,6 +155,38 @@ export interface Notificacion {
   leida: boolean
   requiere_modal: boolean
   created_at: string
+}
+
+// ============================================
+// FORMULARIOS
+// ============================================
+
+export interface NuevaHRForm {
+  // Recepción
+  numero_fojas: number
+  
+  // Remitente
+  remitente_nombre: string
+  remitente_cargo: string
+  
+  // Contenido
+  descripcion_contenido: string
+  
+  // Destinatario
+  tipo_destinatario: TipoDestinatario
+  destinatario_direccion_id: string
+  destinatario_usuario_id?: string
+  destinatario_nombre?: string
+  destinatario_cargo?: string
+  
+  // Tipo de envío
+  tipo_original: boolean
+  tipo_urgente: boolean
+  tipo_copia: boolean
+  tipo_fax: boolean
+  
+  // Instrucciones para el destinatario
+  instrucciones: string
 }
 
 // ============================================

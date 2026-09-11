@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuthContext } from './contexts/AuthContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import ListaHR from './pages/HojasRuta/ListaHR'
+import NuevaHR from './pages/HojasRuta/NuevaHR'
 
 function AppRoutes() {
   const { user, loading } = useAuthContext()
@@ -20,7 +22,16 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
-      <Route path="/*" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+      {user ? (
+        <>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/hojas-ruta" element={<ListaHR />} />
+          <Route path="/hojas-ruta/nueva" element={<NuevaHR />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </>
+      ) : (
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      )}
     </Routes>
   )
 }
