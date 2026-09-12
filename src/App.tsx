@@ -9,6 +9,7 @@ import Usuarios from './pages/Admin/Usuarios'
 import NuevoUsuario from './pages/Admin/NuevoUsuario'
 import Notificaciones from './pages/Notificaciones'
 import CambiarPassword from './pages/CambiarPassword'
+import MiPerfil from './pages/MiPerfil'
 import ModalNotificaciones from './components/notificaciones/ModalNotificaciones'
 import { useRefetchOnFocus } from './hooks/useNotificaciones'
 
@@ -28,7 +29,6 @@ function AppRoutes() {
     )
   }
 
-  // Sin sesión → al login
   if (!user) {
     return (
       <Routes>
@@ -38,7 +38,6 @@ function AppRoutes() {
     )
   }
 
-  // Con sesión pero debe cambiar contraseña → bloqueado
   if (user.debe_cambiar_password) {
     return (
       <Routes>
@@ -47,7 +46,6 @@ function AppRoutes() {
     )
   }
 
-  // Usuario autenticado normal
   return (
     <>
       <Routes>
@@ -59,6 +57,7 @@ function AppRoutes() {
         <Route path="/admin/usuarios" element={<Usuarios />} />
         <Route path="/admin/usuarios/nuevo" element={<NuevoUsuario />} />
         <Route path="/notificaciones" element={<Notificaciones />} />
+        <Route path="/mi-perfil" element={<MiPerfil />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

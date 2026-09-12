@@ -65,7 +65,16 @@ export default function Header() {
           {/* Campana de notificaciones */}
           <CampanaNotificaciones />
 
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg">
+          {/* Bloque usuario → clickeable a Mi Perfil */}
+          <Link
+            to="/mi-perfil"
+            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
+              isActive('/mi-perfil')
+                ? 'bg-white/20'
+                : 'bg-white/10 hover:bg-white/20'
+            }`}
+            title="Mi Perfil"
+          >
             <User className="w-4 h-4" />
             <div className="text-xs">
               <p className="font-medium leading-tight">{user.nombre_completo}</p>
@@ -73,7 +82,7 @@ export default function Header() {
                 {user.rol?.nombre}
               </p>
             </div>
-          </div>
+          </Link>
 
           <button
             onClick={handleSignOut}
