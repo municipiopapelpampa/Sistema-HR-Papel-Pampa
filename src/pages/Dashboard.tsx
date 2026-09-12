@@ -66,13 +66,18 @@ export default function Dashboard() {
             </p>
           </Link>
 
-          <div className="card border-l-4 border-l-gray-300 opacity-60">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
-              <Bell className="w-6 h-6 text-gray-400" />
+          <Link
+            to="/notificaciones"
+            className="card hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-accent"
+          >
+            <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-3">
+              <Bell className="w-6 h-6 text-accent" />
             </div>
             <h3 className="font-bold text-lg mb-1">Notificaciones</h3>
-            <p className="text-sm text-gray-600">Próximamente</p>
-          </div>
+            <p className="text-sm text-gray-600">
+              Revisa las notificaciones del sistema
+            </p>
+          </Link>
         </div>
 
         {/* Administración (solo admin) */}
@@ -107,7 +112,7 @@ export default function Dashboard() {
 
         <div className="card mt-8">
           <p className="text-center text-sm text-gray-500">
-            🚧 Sistema en desarrollo. Módulos de derivación, notificaciones y PDF próximamente.
+            🚧 Sistema en desarrollo. Módulo de reportes próximamente.
           </p>
         </div>
       </main>

@@ -7,9 +7,15 @@ import NuevaHR from './pages/HojasRuta/NuevaHR'
 import DetalleHR from './pages/HojasRuta/DetalleHR'
 import Usuarios from './pages/Admin/Usuarios'
 import NuevoUsuario from './pages/Admin/NuevoUsuario'
+import Notificaciones from './pages/Notificaciones'
+import ModalNotificaciones from './components/notificaciones/ModalNotificaciones'
+import { useRefetchOnFocus } from './hooks/useNotificaciones'
 
 function AppRoutes() {
   const { user, loading } = useAuthContext()
+
+  // Refrescar notificaciones al volver a la pestaña
+  useRefetchOnFocus()
 
   if (loading) {
     return (
@@ -23,22 +29,28 @@ function AppRoutes() {
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
-      {user ? (
-        <>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/hojas-ruta" element={<ListaHR />} />
-          <Route path="/hojas-ruta/nueva" element={<NuevaHR />} />
-          <Route path="/hojas-ruta/:id" element={<DetalleHR />} />
-          <Route path="/admin/usuarios" element={<Usuarios />} />
-          <Route path="/admin/usuarios/nuevo" element={<NuevoUsuario />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </>
-      ) : (
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      )}
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
+        {user ? (
+          <>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/hojas-ruta" element={<ListaHR />} />
+            <Route path="/hojas-ruta/nueva" element={<NuevaHR />} />
+            <Route path="/hojas-ruta/:id" element={<DetalleHR />} />
+            <Route path="/admin/usuarios" element={<Usuarios />} />
+            <Route path="/admin/usuarios/nuevo" element={<NuevoUsuario />} />
+            <Route path="/notificaciones" element={<Notificaciones />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </>
+        ) : (
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        )}
+      </Routes>
+
+      {/* Modal de notificaciones (solo si hay usuario) */}
+      {user && <ModalNotificaciones />}
+    </>
   )
 }
 

@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { LogOut, FileText, Home, Bell, User } from 'lucide-react'
+import { LogOut, FileText, Home, User } from 'lucide-react'
+import CampanaNotificaciones from '../notificaciones/CampanaNotificaciones'
 
 export default function Header() {
   const { user, signOut } = useAuth()
@@ -61,12 +62,8 @@ export default function Header() {
 
         {/* Usuario */}
         <div className="flex items-center gap-2">
-          <button
-            className="relative p-2 hover:bg-white/10 rounded-lg transition-colors"
-            title="Notificaciones"
-          >
-            <Bell className="w-5 h-5" />
-          </button>
+          {/* Campana de notificaciones */}
+          <CampanaNotificaciones />
 
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg">
             <User className="w-4 h-4" />

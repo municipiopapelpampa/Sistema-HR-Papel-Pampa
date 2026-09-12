@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft,
   FileText,
@@ -10,7 +10,8 @@ import {
   XCircle,
   Send,
   FileDown,
-  AlertCircle
+  AlertCircle,
+  Printer
 } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import TimelineDerivaciones from '../../components/hr/TimelineDerivaciones'
@@ -19,21 +20,28 @@ import ModalObservar from '../../components/hr/ModalObservar'
 import ModalRechazar from '../../components/hr/ModalRechazar'
 import ModalDerivar from '../../components/hr/ModalDerivar'
 import ModalConcluir from '../../components/hr/ModalConcluir'
+import ModalPreviewPDF from '../../components/hr/ModalPreviewPDF'
 import { useHojaRuta } from '../../hooks/useHojasRuta'
 import { useDerivaciones } from '../../hooks/useDerivaciones'
 import { useAuth } from '../../hooks/useAuth'
 import { obtenerUrlFirmada, formatearTamano } from '../../services/storage'
 import { toast } from 'sonner'
 
-type ModalAbierto = 'confirmar' | 'observar' | 'rechazar' | 'derivar' | 'concluir' | null
+type ModalAbierto =
+  | 'confirmar'
+  | 'observar'
+  | 'rechazar'
+  | 'derivar'
+  | 'concluir'
+  | null
 
 export default function DetalleHR() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const { user } = useAuth()
   const { data: hr, isLoading } = useHojaRuta(id)
   const { data: derivaciones = [] } = useDerivaciones(id)
   const [modalAbierto, setModalAbierto] = useState<ModalAbierto>(null)
+  const [verPDF, setVerPDF] = useState(false)
 
   if (isLoading) {
     return (
@@ -70,8 +78,7 @@ export default function DetalleHR() {
   const derivacionActual = derivaciones[derivaciones.length - 1]
 
   // ¿El usuario puede actuar sobre la HR actual?
-  const esDeMiDireccion =
-    hr.direccion_actual_id === user.direccion_principal?.id
+  const esDeMiDireccion = hr.direccion_actual_id === user.direccion_principal?.id
   const esAsignadaAMi = hr.usuario_actual_id === user.id
   const puedeActuar =
     hr.estado !== 'CONCLUIDA' &&
@@ -149,12 +156,22 @@ export default function DetalleHR() {
               </p>
             </div>
 
-            {hr.estado === 'CONCLUIDA' && (
-              <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="w-5 h-5" />
-                <span className="text-sm font-medium">Concluida</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {hr.estado === 'CONCLUIDA' && (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="text-sm font-medium">Concluida</span>
+                </div>
+              )}
+              <button
+                onClick={() => setVerPDF(true)}
+                className="btn-outline flex items-center gap-2"
+                title="Ver PDF e imprimir"
+              >
+                <Printer className="w-4 h-4" />
+                Ver PDF
+              </button>
+            </div>
           </div>
         </div>
 
@@ -438,6 +455,14 @@ export default function DetalleHR() {
           hrNumero={hr.numero_unico}
           usuarioId={user.id}
           onClose={() => setModalAbierto(null)}
+        />
+      )}
+
+      {verPDF && (
+        <ModalPreviewPDF
+          hr={hr}
+          derivaciones={derivaciones}
+          onClose={() => setVerPDF(false)}
         />
       )}
     </div>
