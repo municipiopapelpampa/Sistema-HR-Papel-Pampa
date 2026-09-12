@@ -4,6 +4,9 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ListaHR from './pages/HojasRuta/ListaHR'
 import NuevaHR from './pages/HojasRuta/NuevaHR'
+import DetalleHR from './pages/HojasRuta/DetalleHR'
+import Usuarios from './pages/Admin/Usuarios'
+import NuevoUsuario from './pages/Admin/NuevoUsuario'
 
 function AppRoutes() {
   const { user, loading } = useAuthContext()
@@ -27,6 +30,9 @@ function AppRoutes() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/hojas-ruta" element={<ListaHR />} />
           <Route path="/hojas-ruta/nueva" element={<NuevaHR />} />
+          <Route path="/hojas-ruta/:id" element={<DetalleHR />} />
+          <Route path="/admin/usuarios" element={<Usuarios />} />
+          <Route path="/admin/usuarios/nuevo" element={<NuevoUsuario />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </>
       ) : (

@@ -200,3 +200,32 @@ export interface AuthContextType {
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
 }
+
+// ============================================
+// TIPOS ADICIONALES PARA DERIVACIONES
+// ============================================
+
+export interface DerivacionConRelaciones extends Derivacion {
+  destinatario_direccion?: Direccion | null
+  destinatario_usuario?: Usuario | null
+  firma_usuario?: Usuario | null
+}
+
+export interface AccionDerivarForm {
+  direccion_destino_id: string
+  tipo_destinatario: TipoDestinatario
+  destinatario_usuario_id?: string
+  instrucciones: string
+  cite: string
+  respondiendo_con?: string
+  tipo_original: boolean
+  tipo_urgente: boolean
+  tipo_copia: boolean
+  tipo_fax: boolean
+}
+
+export interface AccionResponderForm {
+  cite?: string
+  respondiendo_con?: string
+  observaciones?: string
+}

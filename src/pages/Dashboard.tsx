@@ -82,16 +82,21 @@ export default function Dashboard() {
               Administración
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="card border-l-4 border-l-accent opacity-60">
+              <Link
+                to="/admin/usuarios"
+                className="card hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-accent"
+              >
                 <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-3">
                   <Settings className="w-6 h-6 text-accent" />
                 </div>
                 <h3 className="font-bold text-lg mb-1">Usuarios</h3>
-                <p className="text-sm text-gray-600">Próximamente</p>
-              </div>
-              <div className="card border-l-4 border-l-accent opacity-60">
-                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-3">
-                  <FileText className="w-6 h-6 text-accent" />
+                <p className="text-sm text-gray-600">
+                  Crear, editar y gestionar usuarios del sistema
+                </p>
+              </Link>
+              <div className="card border-l-4 border-l-gray-300 opacity-60">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
+                  <FileText className="w-6 h-6 text-gray-400" />
                 </div>
                 <h3 className="font-bold text-lg mb-1">Reportes</h3>
                 <p className="text-sm text-gray-600">Próximamente</p>
