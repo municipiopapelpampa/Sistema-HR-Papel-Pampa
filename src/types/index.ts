@@ -106,6 +106,7 @@ export interface HojaRutaConRelaciones extends HojaRuta {
   destinatario_direccion?: Direccion | null
   usuario_actual?: Usuario | null
   documentos?: Documento[]
+  gestion?: Pick<Gestion, 'id' | 'anio' | 'estado'> | null
 }
 
 export interface Derivacion {

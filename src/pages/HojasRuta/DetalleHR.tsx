@@ -77,16 +77,23 @@ export default function DetalleHR() {
   // Derivación actual (la última)
   const derivacionActual = derivaciones[derivaciones.length - 1]
 
+  // ¿La gestión está cerrada?
+  const gestionCerrada = hr.gestion?.estado === 'CERRADA'
+
   // ¿El usuario puede actuar sobre la HR actual?
   const esDeMiDireccion = hr.direccion_actual_id === user.direccion_principal?.id
   const esAsignadaAMi = hr.usuario_actual_id === user.id
   const puedeActuar =
     hr.estado !== 'CONCLUIDA' &&
+    !gestionCerrada &&
     (hr.usuario_actual_id ? esAsignadaAMi : esDeMiDireccion)
 
   // ¿Puede concluir?
   const puedeConcluir =
-    user.rol?.puede_concluir === true && puedeActuar && hr.estado !== 'CONCLUIDA'
+    user.rol?.puede_concluir === true &&
+    puedeActuar &&
+    hr.estado !== 'CONCLUIDA' &&
+    !gestionCerrada
 
   const handleDescargar = async (ruta: string, nombre: string) => {
     const url = await obtenerUrlFirmada(ruta)
@@ -173,6 +180,22 @@ export default function DetalleHR() {
               </button>
             </div>
           </div>
+
+          {/* Aviso de gestión cerrada */}
+          {gestionCerrada && (
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-amber-800">
+                <p className="font-semibold">
+                  Hoja de ruta de gestión cerrada ({hr.gestion?.anio})
+                </p>
+                <p className="text-xs mt-0.5">
+                  Solo se puede consultar y descargar el PDF. No se pueden
+                  realizar acciones sobre ella.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Datos de recepción */}
@@ -396,7 +419,7 @@ export default function DetalleHR() {
           </div>
         )}
 
-        {!puedeActuar && hr.estado !== 'CONCLUIDA' && (
+        {!puedeActuar && hr.estado !== 'CONCLUIDA' && !gestionCerrada && (
           <div className="card bg-amber-50 border-amber-200">
             <p className="text-sm text-amber-800 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />

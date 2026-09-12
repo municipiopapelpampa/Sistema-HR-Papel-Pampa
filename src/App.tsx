@@ -7,6 +7,7 @@ import NuevaHR from './pages/HojasRuta/NuevaHR'
 import DetalleHR from './pages/HojasRuta/DetalleHR'
 import Usuarios from './pages/Admin/Usuarios'
 import NuevoUsuario from './pages/Admin/NuevoUsuario'
+import Gestiones from './pages/Admin/Gestiones'
 import Notificaciones from './pages/Notificaciones'
 import CambiarPassword from './pages/CambiarPassword'
 import MiPerfil from './pages/MiPerfil'
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route path="/hojas-ruta/:id" element={<DetalleHR />} />
         <Route path="/admin/usuarios" element={<Usuarios />} />
         <Route path="/admin/usuarios/nuevo" element={<NuevoUsuario />} />
+        <Route path="/admin/gestiones" element={<Gestiones />} />
         <Route path="/notificaciones" element={<Notificaciones />} />
         <Route path="/mi-perfil" element={<MiPerfil />} />
         <Route path="/reportes" element={<Reportes />} />

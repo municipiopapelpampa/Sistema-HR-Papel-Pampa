@@ -1,7 +1,15 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import Header from '../components/layout/Header'
-import { FileText, Bell, Settings, Plus, List, BarChart3 } from 'lucide-react'
+import {
+  FileText,
+  Bell,
+  Settings,
+  Plus,
+  List,
+  BarChart3,
+  Calendar as CalendarIcon
+} from 'lucide-react'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -25,7 +33,9 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Dirección</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                Dirección
+              </p>
               <p className="font-medium text-gray-800">
                 {user.direccion_principal?.nombre || 'Sin asignar'}
               </p>
@@ -99,6 +109,19 @@ export default function Dashboard() {
                   Crear, editar y gestionar usuarios del sistema
                 </p>
               </Link>
+
+              <Link
+                to="/admin/gestiones"
+                className="card hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-accent"
+              >
+                <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-3">
+                  <CalendarIcon className="w-6 h-6 text-accent" />
+                </div>
+                <h3 className="font-bold text-lg mb-1">Gestiones</h3>
+                <p className="text-sm text-gray-600">
+                  Cerrar y crear años fiscales
+                </p>
+              </Link>
             </div>
           </>
         )}
@@ -128,10 +151,10 @@ export default function Dashboard() {
 
         <div className="card mt-8">
           <p className="text-center text-sm text-gray-500">
-            🚧 Sistema en desarrollo. Módulo de gestión de gestiones próximamente.
+            🚧 Sistema en desarrollo. Módulo de búsqueda avanzada próximamente.
           </p>
         </div>
       </main>
     </div>
   )
-}
+} 

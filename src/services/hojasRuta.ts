@@ -244,7 +244,8 @@ export async function obtenerHojaRuta(id: string): Promise<HojaRutaConRelaciones
       remitente:usuarios!hojas_ruta_remitente_usuario_id_fkey(id, nombre_completo, email, cargo),
       direccion_actual:direcciones!hojas_ruta_direccion_actual_id_fkey(id, nombre, codigo),
       destinatario_direccion:direcciones!hojas_ruta_destinatario_direccion_id_fkey(id, nombre, codigo),
-      documentos:documentos(*)
+      documentos:documentos(*),
+      gestion:gestiones!hojas_ruta_gestion_id_fkey(id, anio, estado)
     `)
     .eq('id', id)
     .single()
