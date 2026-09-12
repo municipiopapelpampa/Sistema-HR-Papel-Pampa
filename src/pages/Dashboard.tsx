@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import Header from '../components/layout/Header'
-import { FileText, Bell, Settings, Plus, List } from 'lucide-react'
+import { FileText, Bell, Settings, Plus, List, BarChart3 } from 'lucide-react'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -99,20 +99,36 @@ export default function Dashboard() {
                   Crear, editar y gestionar usuarios del sistema
                 </p>
               </Link>
-              <div className="card border-l-4 border-l-gray-300 opacity-60">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
-                  <FileText className="w-6 h-6 text-gray-400" />
+            </div>
+          </>
+        )}
+
+        {/* Reportes (solo Alcalde, Secretaria y Directores) */}
+        {user.rol?.puede_concluir && (
+          <>
+            <h3 className="font-semibold text-gray-700 mb-3 mt-8">
+              Análisis
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Link
+                to="/reportes"
+                className="card hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-secondary"
+              >
+                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-3">
+                  <BarChart3 className="w-6 h-6 text-secondary" />
                 </div>
                 <h3 className="font-bold text-lg mb-1">Reportes</h3>
-                <p className="text-sm text-gray-600">Próximamente</p>
-              </div>
+                <p className="text-sm text-gray-600">
+                  Genera reportes en PDF para análisis
+                </p>
+              </Link>
             </div>
           </>
         )}
 
         <div className="card mt-8">
           <p className="text-center text-sm text-gray-500">
-            🚧 Sistema en desarrollo. Módulo de reportes próximamente.
+            🚧 Sistema en desarrollo. Módulo de gestión de gestiones próximamente.
           </p>
         </div>
       </main>

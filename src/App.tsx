@@ -10,6 +10,7 @@ import NuevoUsuario from './pages/Admin/NuevoUsuario'
 import Notificaciones from './pages/Notificaciones'
 import CambiarPassword from './pages/CambiarPassword'
 import MiPerfil from './pages/MiPerfil'
+import Reportes from './pages/Reportes/Reportes'
 import ModalNotificaciones from './components/notificaciones/ModalNotificaciones'
 import { useRefetchOnFocus } from './hooks/useNotificaciones'
 
@@ -58,6 +59,7 @@ function AppRoutes() {
         <Route path="/admin/usuarios/nuevo" element={<NuevoUsuario />} />
         <Route path="/notificaciones" element={<Notificaciones />} />
         <Route path="/mi-perfil" element={<MiPerfil />} />
+        <Route path="/reportes" element={<Reportes />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
