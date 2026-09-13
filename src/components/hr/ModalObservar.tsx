@@ -51,9 +51,8 @@ export default function ModalObservar({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
           <Eye className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-700">
-            Registra una observación. La HR sigue en tu poder para que puedas
-            actuar posteriormente.
+          <p className="text-sm text-neutral-700">
+            Registra una observación.
           </p>
         </div>
 
@@ -73,7 +72,14 @@ export default function ModalObservar({
             Cancelar
           </button>
           <button type="submit" disabled={enviando} className="btn-primary">
-            {enviando ? 'Guardando...' : 'Registrar observación'}
+            {enviando ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              'Registrar observación'
+            )}
           </button>
         </div>
       </form>

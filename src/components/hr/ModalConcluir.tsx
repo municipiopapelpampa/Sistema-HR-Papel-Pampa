@@ -49,7 +49,7 @@ export default function ModalConcluir({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-neutral-700">
             Al concluir, la hoja de ruta quedará <strong>finalizada</strong> y
             no podrá seguir derivándose.
           </p>
@@ -70,12 +70,15 @@ export default function ModalConcluir({
           <button type="button" onClick={onClose} className="btn-outline">
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={enviando}
-            className="btn-primary"
-          >
-            {enviando ? 'Concluyendo...' : 'Concluir hoja de ruta'}
+          <button type="submit" disabled={enviando} className="btn-primary">
+            {enviando ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Concluyendo...
+              </>
+            ) : (
+              'Concluir hoja de ruta'
+            )}
           </button>
         </div>
       </form>

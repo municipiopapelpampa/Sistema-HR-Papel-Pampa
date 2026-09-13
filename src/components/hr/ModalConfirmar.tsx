@@ -51,9 +51,9 @@ export default function ModalConfirmar({
       ancho="sm"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg">
-          <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-700">
+        <div className="flex items-start gap-3 p-3 bg-primary-50 rounded-lg border border-primary-200">
+          <CheckCircle2 className="w-5 h-5 text-primary-700 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-neutral-700">
             Confirmas la recepción de esta hoja de ruta. Quedará en tu poder.
           </p>
         </div>
@@ -85,7 +85,14 @@ export default function ModalConfirmar({
             Cancelar
           </button>
           <button type="submit" disabled={enviando} className="btn-primary">
-            {enviando ? 'Confirmando...' : 'Confirmar recepción'}
+            {enviando ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Confirmando...
+              </>
+            ) : (
+              'Confirmar recepción'
+            )}
           </button>
         </div>
       </form>

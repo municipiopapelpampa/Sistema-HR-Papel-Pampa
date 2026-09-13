@@ -23,24 +23,24 @@ export default function ModalBase({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto animate-fade-in">
       <div
         className={`bg-white rounded-2xl shadow-2xl w-full ${anchos[ancho]} my-8`}
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-gray-200 px-6 py-4">
+        <div className="flex items-start justify-between border-b border-neutral-200 px-6 py-4">
           <div className="flex-1 min-w-0">
-            <h2 className="font-bold text-neutral-900 text-lg">{titulo}</h2>
+            <h2 className="text-lg font-bold text-neutral-900">{titulo}</h2>
             {subtitulo && (
-              <p className="text-xs text-gray-500 mt-0.5">{subtitulo}</p>
+              <p className="text-xs text-neutral-500 mt-0.5">{subtitulo}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-lg ml-4"
+            className="p-1.5 hover:bg-neutral-100 rounded-lg ml-4 transition-colors"
             title="Cerrar"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-neutral-500" />
           </button>
         </div>
 

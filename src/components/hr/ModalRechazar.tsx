@@ -49,9 +49,9 @@ export default function ModalRechazar({
       ancho="sm"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
-          <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-700">
+        <div className="flex items-start gap-3 p-3 bg-accent-50 rounded-lg border border-accent-200">
+          <AlertTriangle className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-neutral-700">
             La hoja de ruta <strong>volverá al remitente anterior</strong>. El
             remitente podrá corregirla y reenviarla.
           </p>
@@ -72,12 +72,15 @@ export default function ModalRechazar({
           <button type="button" onClick={onClose} className="btn-outline">
             Cancelar
           </button>
-          <button
-            type="submit"
-            disabled={enviando}
-            className="btn-danger"
-          >
-            {enviando ? 'Devolviendo...' : 'Rechazar y devolver'}
+          <button type="submit" disabled={enviando} className="btn-danger">
+            {enviando ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Devolviendo...
+              </>
+            ) : (
+              'Rechazar y devolver'
+            )}
           </button>
         </div>
       </form>
