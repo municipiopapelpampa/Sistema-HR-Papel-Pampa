@@ -195,43 +195,126 @@ async function crearNotificacionesDestinatarios(
 }
 
 // ============================================
-// LISTAR HOJAS DE RUTA
+// TIPOS DE FILTROS
 // ============================================
-export async function listarHojasRuta(filtros?: {
+export interface FiltrosHR {
+  busqueda?: string
   estado?: string
   direccionId?: string
-  busqueda?: string
-}): Promise<HojaRutaConRelaciones[]> {
+  fechaDesde?: string
+  fechaHasta?: string
+  tipo?: 'ORIGINAL' | 'URGENTE' | 'COPIA' | 'FAX'
+  orden?: 'RECIENTES' | 'ANTIGUAS' | 'NUMERO_ASC' | 'NUMERO_DESC'
+  pagina?: number
+  porPagina?: number
+}
+
+export interface ResultadoListaHR {
+  datos: HojaRutaConRelaciones[]
+  total: number
+  pagina: number
+  porPagina: number
+  totalPaginas: number
+}
+
+// ============================================
+// LISTAR HOJAS DE RUTA CON FILTROS Y PAGINACIÓN
+// ============================================
+export async function listarHojasRuta(
+  filtros?: FiltrosHR
+): Promise<ResultadoListaHR> {
+  const pagina = filtros?.pagina || 1
+  const porPagina = filtros?.porPagina || 10
+  const desde = (pagina - 1) * porPagina
+  const hasta = desde + porPagina - 1
+
+  // Query base
   let query = supabase
     .from('hojas_ruta')
-    .select(`
+    .select(
+      `
       *,
       remitente:usuarios!hojas_ruta_remitente_usuario_id_fkey(id, nombre_completo, email),
       direccion_actual:direcciones!hojas_ruta_direccion_actual_id_fkey(id, nombre, codigo),
-      destinatario_direccion:direcciones!hojas_ruta_destinatario_direccion_id_fkey(id, nombre, codigo)
-    `)
-    .order('created_at', { ascending: false })
+      destinatario_direccion:direcciones!hojas_ruta_destinatario_direccion_id_fkey(id, nombre, codigo),
+      gestion:gestiones!hojas_ruta_gestion_id_fkey(id, anio, estado)
+    `,
+      { count: 'exact' }
+    )
+
+  // Filtros
+  if (filtros?.busqueda && filtros.busqueda.trim()) {
+    const b = filtros.busqueda.trim()
+    query = query.or(
+      `numero_unico.ilike.%${b}%,remitente_nombre.ilike.%${b}%,descripcion_contenido.ilike.%${b}%`
+    )
+  }
 
   if (filtros?.estado) {
     query = query.eq('estado', filtros.estado)
   }
+
   if (filtros?.direccionId) {
     query = query.eq('direccion_actual_id', filtros.direccionId)
   }
-  if (filtros?.busqueda) {
-    query = query.or(
-      `numero_unico.ilike.%${filtros.busqueda}%,remitente_nombre.ilike.%${filtros.busqueda}%,descripcion_contenido.ilike.%${filtros.busqueda}%`
-    )
+
+  if (filtros?.fechaDesde) {
+    query = query.gte('fecha_recepcion', filtros.fechaDesde)
   }
 
-  const { data, error } = await query.limit(100)
+  if (filtros?.fechaHasta) {
+    query = query.lte('fecha_recepcion', filtros.fechaHasta)
+  }
+
+  if (filtros?.tipo === 'ORIGINAL') query = query.eq('tipo_original', true)
+  if (filtros?.tipo === 'URGENTE') query = query.eq('tipo_urgente', true)
+  if (filtros?.tipo === 'COPIA') query = query.eq('tipo_copia', true)
+  if (filtros?.tipo === 'FAX') query = query.eq('tipo_fax', true)
+
+  // Orden
+  switch (filtros?.orden) {
+    case 'ANTIGUAS':
+      query = query.order('created_at', { ascending: true })
+      break
+    case 'NUMERO_ASC':
+      query = query.order('numero_unico', { ascending: true })
+      break
+    case 'NUMERO_DESC':
+      query = query.order('numero_unico', { ascending: false })
+      break
+    case 'RECIENTES':
+    default:
+      query = query.order('created_at', { ascending: false })
+      break
+  }
+
+  // Paginación
+  query = query.range(desde, hasta)
+
+  const { data, error, count } = await query
 
   if (error) {
     console.error('Error al listar HR:', error)
-    return []
+    return {
+      datos: [],
+      total: 0,
+      pagina,
+      porPagina,
+      totalPaginas: 0
+    }
   }
-  return data || []
-}
+
+  const total = count || 0
+  const totalPaginas = Math.ceil(total / porPagina)
+
+  return {
+    datos: (data || []) as HojaRutaConRelaciones[],
+    total,
+    pagina,
+    porPagina,
+    totalPaginas
+  }
+} 
 
 // ============================================
 // OBTENER HR POR ID

@@ -4,15 +4,12 @@ import {
   obtenerHojaRuta,
   crearHojaRuta,
   listarDerivaciones,
-  obtenerGestionActiva
+  obtenerGestionActiva,
+  type FiltrosHR
 } from '../services/hojasRuta'
 import type { NuevaHRForm } from '../types'
 
-export function useHojasRuta(filtros?: {
-  estado?: string
-  direccionId?: string
-  busqueda?: string
-}) {
+export function useHojasRuta(filtros?: FiltrosHR) {
   return useQuery({
     queryKey: ['hojas-ruta', filtros],
     queryFn: () => listarHojasRuta(filtros)
