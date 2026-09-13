@@ -4,13 +4,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Save, X, FileText, Send } from 'lucide-react'
+import { X, FileText, Send, User, Briefcase } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useDirecciones, useUsuariosDeDireccion } from '../../hooks/useDirecciones'
 import { useCrearHojaRuta } from '../../hooks/useHojasRuta'
 import { subirArchivo, guardarDocumento } from '../../services/storage'
 import AdjuntosHR from '../../components/hr/AdjuntosHR'
-import Header from '../../components/layout/Header'
+import Layout from '../../components/layout/Layout'
 import type { TipoDestinatario } from '../../types'
 
 const schema = z.object({
@@ -30,6 +30,15 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
+// Título de sección reutilizable
+function SeccionTitulo({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-sm font-bold text-primary-700 uppercase tracking-wider border-b border-neutral-200 pb-2 mb-4 flex items-center gap-2">
+      {children}
+    </h2>
+  )
+}
+
 export default function NuevaHR() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -42,13 +51,14 @@ export default function NuevaHR() {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors }
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       numero_fojas: 1,
-      remitente_nombre: user?.nombre_completo || '',
-      remitente_cargo: user?.cargo || '',
+      remitente_nombre: '',
+      remitente_cargo: '',
       tipo_destinatario: 'DIRECCION',
       tipo_original: true,
       tipo_urgente: false,
@@ -58,6 +68,23 @@ export default function NuevaHR() {
     }
   })
 
+  // ✅ Autocompletar datos del remitente cuando el usuario esté disponible
+  useEffect(() => {
+    if (user) {
+      reset({
+        numero_fojas: 1,
+        remitente_nombre: user.nombre_completo || '',
+        remitente_cargo: user.cargo || '',
+        tipo_destinatario: 'DIRECCION',
+        tipo_original: true,
+        tipo_urgente: false,
+        tipo_copia: false,
+        tipo_fax: false,
+        instrucciones: ''
+      })
+    }
+  }, [user, reset])
+
   const tipoDest = watch('tipo_destinatario')
   const dirDestId = watch('destinatario_direccion_id')
 
@@ -65,7 +92,7 @@ export default function NuevaHR() {
     tipoDest === 'PERSONA' ? dirDestId : undefined
   )
 
-  // Autocompletar nombre y cargo del destinatario al elegir dirección
+  // Autocompletar destinatario cuando se elige dirección
   useEffect(() => {
     if (tipoDest === 'DIRECCION' && dirDestId) {
       const dir = direcciones.find((d) => d.id === dirDestId)
@@ -95,7 +122,6 @@ export default function NuevaHR() {
     setEnviando(true)
 
     try {
-      // 1. Crear HR
       const result = await crearMutation.mutateAsync({
         form: {
           numero_fojas: data.numero_fojas,
@@ -115,7 +141,6 @@ export default function NuevaHR() {
         direccionOrigenId: user.direccion_principal.id
       })
 
-      // 2. Subir archivos adjuntos
       if (archivos.length > 0 && result) {
         for (const file of archivos) {
           const { path, error } = await subirArchivo(file, result.numero_unico)
@@ -144,43 +169,40 @@ export default function NuevaHR() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
+    <Layout titulo="Nueva Hoja de Ruta">
+      <div className="max-w-4xl mx-auto">
+        {/* Encabezado */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
-              <FileText className="w-6 h-6" />
+            <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+              <FileText className="w-6 h-6 text-primary-700" />
               Nueva Hoja de Ruta
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-neutral-500 mt-1">
               Complete los datos para generar una nueva hoja de ruta
             </p>
           </div>
           <button
             onClick={() => navigate('/hojas-ruta')}
-            className="btn-outline flex items-center gap-2"
+            className="btn-outline flex items-center gap-2 w-fit"
           >
             <X className="w-4 h-4" />
             Cancelar
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pb-8">
           {/* BLOQUE: Recepción */}
-          <div className="card">
-            <h2 className="font-serif font-bold text-secondary border-b border-gray-200 pb-2 mb-4">
-              DATOS DE RECEPCIÓN
-            </h2>
+          <div className="card p-6">
+            <SeccionTitulo>Datos de Recepción</SeccionTitulo>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="label-field">N° Correlativo</label>
                 <input
                   type="text"
                   disabled
-                  value="(Se genera automáticamente)"
-                  className="input-field bg-gray-100 text-gray-500 text-sm"
+                  value="(Automático)"
+                  className="input-field bg-neutral-100 text-neutral-500"
                 />
               </div>
               <div>
@@ -189,7 +211,7 @@ export default function NuevaHR() {
                   type="text"
                   disabled
                   value={new Date().toLocaleDateString('es-BO')}
-                  className="input-field bg-gray-100 text-gray-500 text-sm"
+                  className="input-field bg-neutral-100 text-neutral-500"
                 />
               </div>
               <div>
@@ -201,11 +223,11 @@ export default function NuevaHR() {
                     hour: '2-digit',
                     minute: '2-digit'
                   })}
-                  className="input-field bg-gray-100 text-gray-500 text-sm"
+                  className="input-field bg-neutral-100 text-neutral-500"
                 />
               </div>
               <div>
-                <label className="label-field">N° de Fojas *</label>
+                <label className="label-field">N° de Hojas *</label>
                 <input
                   type="number"
                   min={1}
@@ -213,51 +235,65 @@ export default function NuevaHR() {
                   className="input-field"
                 />
                 {errors.numero_fojas && (
-                  <p className="text-xs text-red-500 mt-1">{errors.numero_fojas.message}</p>
+                  <p className="text-xs text-accent-600 mt-1">
+                    {errors.numero_fojas.message}
+                  </p>
                 )}
               </div>
             </div>
           </div>
 
           {/* BLOQUE: Remitente */}
-          <div className="card">
-            <h2 className="font-serif font-bold text-secondary border-b border-gray-200 pb-2 mb-4">
-              DATOS DEL REMITENTE
-            </h2>
+          <div className="card p-6">
+            <SeccionTitulo>Datos del Remitente</SeccionTitulo>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label-field">Nombre *</label>
-                <input
-                  type="text"
-                  {...register('remitente_nombre')}
-                  className="input-field"
-                />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <input
+                    type="text"
+                    {...register('remitente_nombre')}
+                    className="input-field pl-10"
+                  />
+                </div>
                 {errors.remitente_nombre && (
-                  <p className="text-xs text-red-500 mt-1">{errors.remitente_nombre.message}</p>
+                  <p className="text-xs text-accent-600 mt-1">
+                    {errors.remitente_nombre.message}
+                  </p>
                 )}
               </div>
               <div>
                 <label className="label-field">Cargo / Institución *</label>
-                <input
-                  type="text"
-                  {...register('remitente_cargo')}
-                  className="input-field"
-                />
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <input
+                    type="text"
+                    {...register('remitente_cargo')}
+                    className="input-field pl-10"
+                  />
+                </div>
                 {errors.remitente_cargo && (
-                  <p className="text-xs text-red-500 mt-1">{errors.remitente_cargo.message}</p>
+                  <p className="text-xs text-accent-600 mt-1">
+                    {errors.remitente_cargo.message}
+                  </p>
                 )}
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-3">
-              💡 Se autocompletó con tus datos. Puedes modificarlo si la HR la envía otra persona.
+
+            <p className="text-xs text-neutral-500 mt-3 flex items-start gap-1.5">
+              <span>💡</span>
+              <span>
+                Puedes modificar el nombre y cargo si la HR la envía otra
+                persona en representación tuya.
+              </span>
             </p>
           </div>
 
           {/* BLOQUE: Descripción */}
-          <div className="card">
-            <h2 className="font-serif font-bold text-secondary border-b border-gray-200 pb-2 mb-4">
-              DESCRIPCIÓN DEL CONTENIDO
-            </h2>
+          <div className="card p-6">
+            <SeccionTitulo>Descripción del Contenido</SeccionTitulo>
             <textarea
               rows={4}
               {...register('descripcion_contenido')}
@@ -265,44 +301,51 @@ export default function NuevaHR() {
               className="input-field resize-none"
             />
             {errors.descripcion_contenido && (
-              <p className="text-xs text-red-500 mt-1">{errors.descripcion_contenido.message}</p>
+              <p className="text-xs text-accent-600 mt-1">
+                {errors.descripcion_contenido.message}
+              </p>
             )}
           </div>
 
           {/* BLOQUE: Destinatario */}
-          <div className="card">
-            <h2 className="font-serif font-bold text-secondary border-b border-gray-200 pb-2 mb-4">
-              DESTINATARIO
-            </h2>
+          <div className="card p-6">
+            <SeccionTitulo>Destinatario</SeccionTitulo>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label-field">Tipo de destinatario</label>
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-1">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       value="DIRECCION"
                       {...register('tipo_destinatario')}
-                      className="w-4 h-4 text-primary"
+                      className="w-4 h-4 text-primary-700 focus:ring-primary-500/30"
                     />
-                    <span className="text-sm">Dirección completa</span>
+                    <span className="text-sm text-neutral-700">
+                      Dirección completa
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       value="PERSONA"
                       {...register('tipo_destinatario')}
-                      className="w-4 h-4 text-primary"
+                      className="w-4 h-4 text-primary-700 focus:ring-primary-500/30"
                     />
-                    <span className="text-sm">Persona específica</span>
+                    <span className="text-sm text-neutral-700">
+                      Persona específica
+                    </span>
                   </label>
                 </div>
               </div>
 
               <div>
                 <label className="label-field">Dirección destino *</label>
-                <select {...register('destinatario_direccion_id')} className="input-field">
+                <select
+                  {...register('destinatario_direccion_id')}
+                  className="input-field"
+                >
                   <option value="">-- Selecciona --</option>
                   {direcciones.map((d) => (
                     <option key={d.id} value={d.id}>
@@ -311,7 +354,7 @@ export default function NuevaHR() {
                   ))}
                 </select>
                 {errors.destinatario_direccion_id && (
-                  <p className="text-xs text-red-500 mt-1">
+                  <p className="text-xs text-accent-600 mt-1">
                     {errors.destinatario_direccion_id.message}
                   </p>
                 )}
@@ -321,7 +364,10 @@ export default function NuevaHR() {
             {tipoDest === 'PERSONA' && (
               <div className="mt-4">
                 <label className="label-field">Persona específica *</label>
-                <select {...register('destinatario_usuario_id')} className="input-field">
+                <select
+                  {...register('destinatario_usuario_id')}
+                  className="input-field"
+                >
                   <option value="">-- Selecciona --</option>
                   {usuariosDir.map((u) => (
                     <option key={u.id} value={u.id}>
@@ -339,51 +385,53 @@ export default function NuevaHR() {
           </div>
 
           {/* BLOQUE: Tipo de envío */}
-          <div className="card">
-            <h2 className="font-serif font-bold text-secondary border-b border-gray-200 pb-2 mb-4">
-              TIPO DE ENVÍO
-            </h2>
+          <div className="card p-6">
+            <SeccionTitulo>Tipo de Envío</SeccionTitulo>
             <div className="flex flex-wrap gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   {...register('tipo_original')}
-                  className="w-4 h-4 text-primary rounded"
+                  className="w-4 h-4 text-primary-700 rounded focus:ring-primary-500/30"
                 />
-                <span className="text-sm font-medium">Original</span>
+                <span className="text-sm font-medium text-neutral-700">
+                  Original
+                </span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   {...register('tipo_urgente')}
-                  className="w-4 h-4 text-accent rounded"
+                  className="w-4 h-4 text-accent-600 rounded focus:ring-accent-500/30"
                 />
-                <span className="text-sm font-medium">Urgente</span>
+                <span className="text-sm font-medium text-neutral-700">
+                  Urgente
+                </span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   {...register('tipo_copia')}
-                  className="w-4 h-4 text-secondary rounded"
+                  className="w-4 h-4 text-secondary-700 rounded focus:ring-secondary-500/30"
                 />
-                <span className="text-sm font-medium">Copia</span>
+                <span className="text-sm font-medium text-neutral-700">
+                  Copia
+                </span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   {...register('tipo_fax')}
-                  className="w-4 h-4 text-gray-500 rounded"
+                  className="w-4 h-4 text-neutral-500 rounded focus:ring-neutral-400/30"
                 />
-                <span className="text-sm font-medium">Fax</span>
+                <span className="text-sm font-medium text-neutral-700">Fax</span>
               </label>
             </div>
           </div>
 
           {/* BLOQUE: Instrucciones */}
-          <div className="card">
-            <h2 className="font-serif font-bold text-secondary border-b border-gray-200 pb-2 mb-4">
-              INSTRUCCIONES
-            </h2>
+          <div className="card p-6">
+            <SeccionTitulo>Instrucciones</SeccionTitulo>
             <textarea
               rows={4}
               {...register('instrucciones')}
@@ -391,20 +439,24 @@ export default function NuevaHR() {
               className="input-field resize-none"
             />
             {errors.instrucciones && (
-              <p className="text-xs text-red-500 mt-1">{errors.instrucciones.message}</p>
+              <p className="text-xs text-accent-600 mt-1">
+                {errors.instrucciones.message}
+              </p>
             )}
           </div>
 
           {/* BLOQUE: Adjuntos */}
-          <div className="card">
-            <h2 className="font-serif font-bold text-secondary border-b border-gray-200 pb-2 mb-4">
-              DOCUMENTOS ADJUNTOS
-            </h2>
-            <AdjuntosHR archivos={archivos} onChange={setArchivos} maxArchivos={5} />
+          <div className="card p-6">
+            <SeccionTitulo>Documentos Adjuntos</SeccionTitulo>
+            <AdjuntosHR
+              archivos={archivos}
+              onChange={setArchivos}
+              maxArchivos={5}
+            />
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end gap-3 pb-8">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => navigate('/hojas-ruta')}
@@ -416,7 +468,7 @@ export default function NuevaHR() {
             <button
               type="submit"
               disabled={enviando}
-              className="btn-primary flex items-center gap-2"
+              className="btn-primary"
             >
               {enviando ? (
                 <>
@@ -432,7 +484,7 @@ export default function NuevaHR() {
             </button>
           </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </Layout>
   )
 }

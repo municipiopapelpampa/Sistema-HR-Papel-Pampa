@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
-import Header from '../../components/layout/Header'
+import Layout from '../../components/layout/Layout'
 import ModalNuevaGestion from '../../components/admin/ModalNuevaGestion'
 import ModalCerrarGestion from '../../components/admin/ModalCerrarGestion'
 import {
@@ -18,7 +18,8 @@ import {
   Shield,
   CheckCircle2,
   Clock,
-  FileText
+  FileText,
+  Info
 } from 'lucide-react'
 import type { Gestion } from '../../types'
 
@@ -33,18 +34,17 @@ export default function Gestiones() {
 
   if (!user?.rol?.puede_admin) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-4xl mx-auto px-4 py-8">
+      <Layout titulo="Gestiones">
+        <div className="max-w-4xl mx-auto">
           <div className="card text-center py-12">
-            <Shield className="w-12 h-12 text-red-500 mx-auto mb-3" />
-            <p className="text-gray-700 font-medium">Sin permisos</p>
-            <p className="text-sm text-gray-500 mt-1">
+            <Shield className="w-12 h-12 text-accent-500 mx-auto mb-3" />
+            <p className="text-neutral-700 font-medium">Sin permisos</p>
+            <p className="text-sm text-neutral-500 mt-1">
               Solo el Alcalde y la Secretaria pueden gestionar las gestiones
             </p>
           </div>
         </div>
-      </div>
+      </Layout>
     )
   }
 
@@ -64,17 +64,16 @@ export default function Gestiones() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <main className="max-w-5xl mx-auto px-4 py-8">
+    <Layout titulo="Gestiones">
+      <div className="max-w-5xl mx-auto">
+        {/* Encabezado */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
-              <Calendar className="w-6 h-6" />
+            <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+              <Calendar className="w-6 h-6 text-primary-700" />
               Gestión de Años Fiscales
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-neutral-500 mt-1">
               Administra las gestiones del sistema
             </p>
           </div>
@@ -95,33 +94,33 @@ export default function Gestiones() {
 
         {/* Gestión activa */}
         {activa && (
-          <div className="card border-l-4 border-l-green-500 mb-6">
-            <div className="flex items-start justify-between gap-4">
+          <div className="card p-6 border-l-4 border-l-green-500 mb-6">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div className="flex items-start gap-4 flex-1">
                 <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                   <CheckCircle2 className="w-7 h-7 text-green-600" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h2 className="text-2xl font-bold text-gray-800">
+                  <div className="flex items-center gap-3 mb-1 flex-wrap">
+                    <h2 className="text-2xl font-bold text-neutral-900">
                       Gestión {activa.anio}
                     </h2>
-                    <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full font-medium">
+                    <span className="badge bg-green-100 text-green-800">
                       ACTIVA
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500 mb-3">
+                  <p className="text-sm text-neutral-500 mb-3">
                     Iniciada el{' '}
-                    {new Date(activa.fecha_inicio + 'T00:00:00').toLocaleDateString(
-                      'es-BO'
-                    )}
+                    {new Date(
+                      activa.fecha_inicio + 'T00:00:00'
+                    ).toLocaleDateString('es-BO')}
                   </p>
                   <ContadorHR gestionId={activa.id} />
                 </div>
               </div>
               <button
                 onClick={() => setCerrarGestion(activa)}
-                className="btn-danger flex items-center gap-2 whitespace-nowrap"
+                className="btn-danger flex items-center gap-2 whitespace-nowrap w-fit"
               >
                 <Lock className="w-4 h-4" />
                 Cerrar gestión
@@ -131,7 +130,7 @@ export default function Gestiones() {
         )}
 
         {!activa && (
-          <div className="card bg-amber-50 border-l-4 border-l-amber-500 mb-6">
+          <div className="card p-5 bg-amber-50 border-l-4 border-l-amber-500 mb-6">
             <div className="flex items-start gap-3">
               <Shield className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
@@ -148,35 +147,35 @@ export default function Gestiones() {
         )}
 
         {/* Historial */}
-        <h3 className="font-semibold text-gray-700 mb-3">
+        <h3 className="font-semibold text-neutral-700 mb-3">
           Historial de gestiones
         </h3>
 
         {isLoading ? (
           <div className="card text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto" />
-            <p className="mt-4 text-gray-500">Cargando gestiones...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-700 mx-auto" />
+            <p className="mt-4 text-neutral-500">Cargando gestiones...</p>
           </div>
         ) : gestiones.length === 0 ? (
           <div className="card text-center py-12">
-            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No hay gestiones registradas</p>
+            <Calendar className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+            <p className="text-neutral-500">No hay gestiones registradas</p>
           </div>
         ) : (
           <div className="space-y-3">
             {gestiones.map((g) => (
               <div
                 key={g.id}
-                className={`card flex items-center justify-between gap-4 ${
+                className={`card p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${
                   g.estado === 'ACTIVA' ? 'border-l-4 border-l-green-500' : ''
                 }`}
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   <div
-                    className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       g.estado === 'ACTIVA'
                         ? 'bg-green-100 text-green-600'
-                        : 'bg-gray-100 text-gray-500'
+                        : 'bg-neutral-100 text-neutral-500'
                     }`}
                   >
                     {g.estado === 'ACTIVA' ? (
@@ -187,20 +186,20 @@ export default function Gestiones() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-bold text-lg text-gray-800">
+                      <h4 className="font-bold text-lg text-neutral-900">
                         {g.anio}
                       </h4>
                       <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        className={`badge ${
                           g.estado === 'ACTIVA'
                             ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-600'
+                            : 'bg-neutral-100 text-neutral-600'
                         }`}
                       >
                         {g.estado}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
+                    <div className="flex items-center gap-4 text-xs text-neutral-500 flex-wrap">
                       <span>
                         <strong>Inicio:</strong>{' '}
                         {new Date(g.fecha_inicio + 'T00:00:00').toLocaleDateString(
@@ -222,7 +221,7 @@ export default function Gestiones() {
                 {g.estado === 'CERRADA' && (
                   <button
                     onClick={() => handleReabrir(g)}
-                    className="btn-outline flex items-center gap-2 text-sm whitespace-nowrap"
+                    className="btn-outline flex items-center gap-2 text-sm whitespace-nowrap w-fit"
                     title="Reabrir gestión"
                   >
                     <Unlock className="w-4 h-4" />
@@ -235,16 +234,16 @@ export default function Gestiones() {
         )}
 
         {/* Nota informativa */}
-        <div className="card mt-6 bg-blue-50 border-blue-200">
+        <div className="card p-5 mt-6 bg-primary-50 border-primary-200">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Clock className="w-4 h-4 text-blue-600" />
+            <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <Info className="w-4 h-4 text-primary-700" />
             </div>
             <div>
-              <p className="font-semibold text-blue-900 text-sm mb-1">
+              <p className="font-semibold text-primary-900 text-sm mb-1">
                 ¿Cómo funciona el cierre de gestión?
               </p>
-              <ul className="text-xs text-blue-800 space-y-1 list-disc pl-4">
+              <ul className="text-xs text-primary-800 space-y-1 list-disc pl-4">
                 <li>
                   Al cerrar una gestión, sus hojas de ruta quedan en{' '}
                   <strong>modo solo lectura</strong>.
@@ -260,7 +259,7 @@ export default function Gestiones() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Modales */}
       {modalNueva && (
@@ -276,7 +275,7 @@ export default function Gestiones() {
           onClose={() => setCerrarGestion(null)}
         />
       )}
-    </div>
+    </Layout>
   )
 }
 
@@ -288,7 +287,7 @@ function ContadorHR({ gestionId }: { gestionId: string }) {
 
   if (isLoading || !data) {
     return (
-      <div className="flex gap-4 text-xs text-gray-500">
+      <div className="flex gap-4 text-xs text-neutral-500">
         <span>Cargando estadísticas...</span>
       </div>
     )
@@ -297,24 +296,24 @@ function ContadorHR({ gestionId }: { gestionId: string }) {
   return (
     <div className="flex gap-4 flex-wrap">
       <div className="flex items-center gap-1.5">
-        <FileText className="w-3.5 h-3.5 text-gray-400" />
+        <FileText className="w-3.5 h-3.5 text-neutral-400" />
         <span className="text-sm">
           <strong>{data.total}</strong>{' '}
-          <span className="text-gray-500">HR totales</span>
+          <span className="text-neutral-500">HR totales</span>
         </span>
       </div>
       <div className="flex items-center gap-1.5">
         <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
         <span className="text-sm">
           <strong>{data.concluidas}</strong>{' '}
-          <span className="text-gray-500">concluidas</span>
+          <span className="text-neutral-500">concluidas</span>
         </span>
       </div>
       <div className="flex items-center gap-1.5">
         <Clock className="w-3.5 h-3.5 text-amber-500" />
         <span className="text-sm">
           <strong>{data.pendientes}</strong>{' '}
-          <span className="text-gray-500">pendientes</span>
+          <span className="text-neutral-500">pendientes</span>
         </span>
       </div>
     </div>

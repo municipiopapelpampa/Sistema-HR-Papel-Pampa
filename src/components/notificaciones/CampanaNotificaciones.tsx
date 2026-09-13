@@ -59,7 +59,11 @@ export default function CampanaNotificaciones() {
       {/* Botón campana */}
       <button
         onClick={() => setAbierto(!abierto)}
-        className="relative p-2 hover:bg-white/10 rounded-lg transition-colors"
+        className={`relative p-2 rounded-lg transition-all duration-200 ${
+          abierto
+            ? 'bg-primary-50 text-primary-700'
+            : 'hover:bg-neutral-100 text-neutral-700'
+        }`}
         title="Notificaciones"
       >
         <Bell className="w-5 h-5" />

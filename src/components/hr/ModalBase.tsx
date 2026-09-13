@@ -30,7 +30,7 @@ export default function ModalBase({
         {/* Header */}
         <div className="flex items-start justify-between border-b border-gray-200 px-6 py-4">
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-secondary font-serif">{titulo}</h2>
+            <h2 className="font-bold text-neutral-900 text-lg">{titulo}</h2>
             {subtitulo && (
               <p className="text-xs text-gray-500 mt-0.5">{subtitulo}</p>
             )}

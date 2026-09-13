@@ -1,6 +1,6 @@
 import { useState, FormEvent, useMemo } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import Header from '../components/layout/Header'
+import Layout from '../components/layout/Layout'
 import { useActualizarPerfil, useCambiarPassword } from '../hooks/usePerfil'
 import { toast } from 'sonner'
 import {
@@ -21,9 +21,6 @@ import {
   Calendar
 } from 'lucide-react'
 
-// ============================================
-// VALIDACIONES DE CONTRASEÑA
-// ============================================
 interface Requisitos {
   longitud: boolean
   mayuscula: boolean
@@ -46,18 +43,31 @@ function todosCumplidos(req: Requisitos): boolean {
   return Object.values(req).every(Boolean)
 }
 
+function SeccionTitulo({
+  children,
+  icono: Icono
+}: {
+  children: React.ReactNode
+  icono?: any
+}) {
+  return (
+    <h2 className="text-sm font-bold text-primary-700 uppercase tracking-wider border-b border-neutral-200 pb-2 mb-4 flex items-center gap-2">
+      {Icono && <Icono className="w-4 h-4" />}
+      {children}
+    </h2>
+  )
+}
+
 export default function MiPerfil() {
   const { user, refreshUser } = useAuth()
   const actualizarMutation = useActualizarPerfil()
   const cambiarPwdMutation = useCambiarPassword()
 
-  // Estado de edición de datos
   const [editando, setEditando] = useState(false)
   const [nombre, setNombre] = useState(user?.nombre_completo || '')
   const [cargo, setCargo] = useState(user?.cargo || '')
   const [guardandoDatos, setGuardandoDatos] = useState(false)
 
-  // Estado de cambio de contraseña
   const [mostrarCambioPwd, setMostrarCambioPwd] = useState(false)
   const [pwdActual, setPwdActual] = useState('')
   const [pwdNueva, setPwdNueva] = useState('')
@@ -74,9 +84,6 @@ export default function MiPerfil() {
 
   if (!user) return null
 
-  // ============================================
-  // GUARDAR DATOS DEL PERFIL
-  // ============================================
   const handleGuardarDatos = async (e: FormEvent) => {
     e.preventDefault()
     if (nombre.trim().length < 3) {
@@ -107,9 +114,6 @@ export default function MiPerfil() {
     setEditando(false)
   }
 
-  // ============================================
-  // CAMBIAR CONTRASEÑA
-  // ============================================
   const handleCambiarPassword = async (e: FormEvent) => {
     e.preventDefault()
     setErrorPwd(null)
@@ -161,11 +165,11 @@ export default function MiPerfil() {
   }) => (
     <li className="flex items-center gap-2 text-xs">
       {cumplido ? (
-        <Check className="w-3 h-3 text-green-600 flex-shrink-0" />
+        <Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
       ) : (
-        <X className="w-3 h-3 text-gray-400 flex-shrink-0" />
+        <X className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />
       )}
-      <span className={cumplido ? 'text-green-700' : 'text-gray-500'}>
+      <span className={cumplido ? 'text-green-700' : 'text-neutral-500'}>
         {texto}
       </span>
     </li>
@@ -183,43 +187,40 @@ export default function MiPerfil() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <main className="max-w-4xl mx-auto px-4 py-8">
+    <Layout titulo="Mi Perfil">
+      <div className="max-w-4xl mx-auto">
+        {/* Encabezado */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
-            <User className="w-6 h-6" />
+          <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+            <User className="w-6 h-6 text-primary-700" />
             Mi Perfil
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-neutral-500 mt-1">
             Administra tu información personal y tu contraseña
           </p>
         </div>
 
         {/* Tarjeta principal del perfil */}
-        <div className="card mb-6">
+        <div className="card p-6 mb-6">
           <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center flex-shrink-0 text-white text-3xl font-bold shadow-lg">
+            <div className="w-20 h-20 bg-gradient-to-br from-primary-600 to-primary-800 rounded-full flex items-center justify-center flex-shrink-0 text-white text-3xl font-bold shadow-lg">
               {user.nombre_completo.charAt(0).toUpperCase()}
             </div>
 
-            {/* Info */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-800 mb-1">
+              <h2 className="text-xl font-bold text-neutral-900 mb-1">
                 {user.nombre_completo}
               </h2>
-              <p className="text-sm text-gray-500 mb-3">
+              <p className="text-sm text-neutral-500 mb-3">
                 {user.cargo || 'Sin cargo asignado'}
               </p>
               <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 bg-primary/10 text-primary rounded-full font-medium capitalize">
+                <span className="badge bg-primary-100 text-primary-800 capitalize">
                   <Shield className="w-3 h-3" />
                   {user.rol?.nombre}
                 </span>
                 {user.direccion_principal && (
-                  <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 bg-secondary/10 text-secondary rounded-full font-medium">
+                  <span className="badge bg-secondary-100 text-secondary-800">
                     <Building2 className="w-3 h-3" />
                     {user.direccion_principal.codigo}
                   </span>
@@ -230,16 +231,13 @@ export default function MiPerfil() {
         </div>
 
         {/* Datos del usuario */}
-        <div className="card mb-6">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-4">
-            <h2 className="font-serif font-bold text-secondary flex items-center gap-2">
-              <User className="w-4 h-4" />
-              DATOS PERSONALES
-            </h2>
+        <div className="card p-6 mb-6">
+          <div className="flex items-center justify-between border-b border-neutral-200 pb-3 mb-4">
+            <SeccionTitulo>Datos Personales</SeccionTitulo>
             {!editando && (
               <button
                 onClick={() => setEditando(true)}
-                className="text-sm text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg flex items-center gap-1.5"
+                className="text-sm text-primary-700 hover:bg-primary-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors"
               >
                 <Edit2 className="w-3.5 h-3.5" />
                 Editar
@@ -249,28 +247,26 @@ export default function MiPerfil() {
 
           <form onSubmit={handleGuardarDatos}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Nombre */}
               <div>
                 <label className="label-field">Nombre completo</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type="text"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                     disabled={!editando}
                     className={`input-field pl-10 ${
-                      !editando ? 'bg-gray-50 cursor-not-allowed' : ''
+                      !editando ? 'bg-neutral-100 cursor-not-allowed' : ''
                     }`}
                   />
                 </div>
               </div>
 
-              {/* Cargo */}
               <div>
                 <label className="label-field">Cargo</label>
                 <div className="relative">
-                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type="text"
                     value={cargo}
@@ -278,51 +274,48 @@ export default function MiPerfil() {
                     disabled={!editando}
                     placeholder="Sin cargo"
                     className={`input-field pl-10 ${
-                      !editando ? 'bg-gray-50 cursor-not-allowed' : ''
+                      !editando ? 'bg-neutral-100 cursor-not-allowed' : ''
                     }`}
                   />
                 </div>
               </div>
 
-              {/* Email (no editable) */}
               <div>
                 <label className="label-field">Correo electrónico</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type="email"
                     value={user.email}
                     disabled
-                    className="input-field pl-10 bg-gray-50 cursor-not-allowed"
+                    className="input-field pl-10 bg-neutral-100 cursor-not-allowed"
                   />
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-neutral-400 mt-1">
                   El correo no se puede modificar
                 </p>
               </div>
 
-              {/* Rol (no editable) */}
               <div>
                 <label className="label-field">Rol</label>
                 <div className="relative">
-                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type="text"
                     value={user.rol?.nombre || '-'}
                     disabled
-                    className="input-field pl-10 bg-gray-50 cursor-not-allowed capitalize"
+                    className="input-field pl-10 bg-neutral-100 cursor-not-allowed capitalize"
                   />
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-neutral-400 mt-1">
                   El rol solo lo puede cambiar el Alcalde o la Secretaria
                 </p>
               </div>
 
-              {/* Dirección (no editable) */}
               <div className="md:col-span-2">
                 <label className="label-field">Dirección</label>
                 <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type="text"
                     value={
@@ -331,18 +324,17 @@ export default function MiPerfil() {
                         : 'Sin asignar'
                     }
                     disabled
-                    className="input-field pl-10 bg-gray-50 cursor-not-allowed"
+                    className="input-field pl-10 bg-neutral-100 cursor-not-allowed"
                   />
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-neutral-400 mt-1">
                   La dirección solo la puede cambiar el Alcalde o la Secretaria
                 </p>
               </div>
             </div>
 
-            {/* Botones de edición */}
             {editando && (
-              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-neutral-100">
                 <button
                   type="button"
                   onClick={handleCancelarEdicion}
@@ -354,7 +346,7 @@ export default function MiPerfil() {
                 <button
                   type="submit"
                   disabled={guardandoDatos}
-                  className="btn-primary flex items-center gap-2"
+                  className="btn-primary"
                 >
                   {guardandoDatos ? (
                     <>
@@ -374,16 +366,16 @@ export default function MiPerfil() {
         </div>
 
         {/* Último acceso */}
-        <div className="card mb-6">
+        <div className="card p-5 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-gray-500" />
+            <div className="w-10 h-10 bg-neutral-100 rounded-full flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-neutral-500" />
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
+              <p className="text-xs text-neutral-500 uppercase tracking-wide font-semibold">
                 Último acceso
               </p>
-              <p className="text-sm font-medium text-gray-800">
+              <p className="text-sm font-medium text-neutral-800">
                 {formatFecha(user.ultimo_acceso)}
               </p>
             </div>
@@ -391,16 +383,13 @@ export default function MiPerfil() {
         </div>
 
         {/* Cambio de contraseña */}
-        <div className="card">
-          <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-4">
-            <h2 className="font-serif font-bold text-secondary flex items-center gap-2">
-              <KeyRound className="w-4 h-4" />
-              SEGURIDAD
-            </h2>
+        <div className="card p-6">
+          <div className="flex items-center justify-between border-b border-neutral-200 pb-3 mb-4">
+            <SeccionTitulo icono={KeyRound}>Seguridad</SeccionTitulo>
             {!mostrarCambioPwd && (
               <button
                 onClick={() => setMostrarCambioPwd(true)}
-                className="text-sm text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg flex items-center gap-1.5"
+                className="text-sm text-primary-700 hover:bg-primary-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition-colors"
               >
                 <Lock className="w-3.5 h-3.5" />
                 Cambiar contraseña
@@ -409,9 +398,9 @@ export default function MiPerfil() {
           </div>
 
           {!mostrarCambioPwd ? (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
               <Shield className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-neutral-600">
                 Tu contraseña está protegida. Si sospechas que alguien más la
                 conoce, cámbiala ahora.
               </p>
@@ -419,17 +408,16 @@ export default function MiPerfil() {
           ) : (
             <form onSubmit={handleCambiarPassword} className="space-y-4">
               {errorPwd && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-700">{errorPwd}</p>
+                <div className="p-3 bg-accent-50 border border-accent-200 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-accent-700">{errorPwd}</p>
                 </div>
               )}
 
-              {/* Contraseña actual */}
               <div>
                 <label className="label-field">Contraseña actual *</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type={showActual ? 'text' : 'password'}
                     value={pwdActual}
@@ -441,18 +429,21 @@ export default function MiPerfil() {
                   <button
                     type="button"
                     onClick={() => setShowActual(!showActual)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                   >
-                    {showActual ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showActual ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
-              {/* Nueva contraseña */}
               <div>
                 <label className="label-field">Nueva contraseña *</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type={showNueva ? 'text' : 'password'}
                     value={pwdNueva}
@@ -464,18 +455,21 @@ export default function MiPerfil() {
                   <button
                     type="button"
                     onClick={() => setShowNueva(!showNueva)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                   >
-                    {showNueva ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showNueva ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
-              {/* Confirmar contraseña */}
               <div>
                 <label className="label-field">Confirmar nueva contraseña *</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type={showConfirmar ? 'text' : 'password'}
                     value={pwdConfirmar}
@@ -487,21 +481,24 @@ export default function MiPerfil() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmar(!showConfirmar)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                   >
-                    {showConfirmar ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirmar ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {pwdConfirmar.length > 0 && !coinciden && (
-                  <p className="text-xs text-red-500 mt-1">
+                  <p className="text-xs text-accent-600 mt-1">
                     Las contraseñas no coinciden
                   </p>
                 )}
               </div>
 
-              {/* Requisitos */}
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs font-medium text-gray-600 mb-2 uppercase">
+              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                <p className="text-xs font-bold text-neutral-600 mb-2 uppercase tracking-wide">
                   Requisitos:
                 </p>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
@@ -546,7 +543,7 @@ export default function MiPerfil() {
                 <button
                   type="submit"
                   disabled={cambiandoPwd || !passwordValida || !coinciden}
-                  className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-primary disabled:opacity-50"
                 >
                   {cambiandoPwd ? (
                     <>
@@ -564,7 +561,7 @@ export default function MiPerfil() {
             </form>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   )
 }

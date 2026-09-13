@@ -73,7 +73,7 @@ export default function ModalPreviewPDF({ hr, derivaciones, onClose }: Props) {
               <FileText className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="font-bold text-secondary font-serif text-lg">
+              <h2 className="font-bold text-neutral-900 text-lg">
                 Vista Previa - {hr.numero_unico}
               </h2>
               <p className="text-xs text-gray-500">
