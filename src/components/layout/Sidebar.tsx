@@ -3,7 +3,6 @@ import {
   Home,
   Inbox,
   FileText,
-  Bell,
   BarChart3,
   Settings,
   Users,
@@ -16,7 +15,6 @@ import {
   ChevronsRight
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
-import { useContadorNoLeidas } from '../../hooks/useNotificaciones'
 import { useBandeja } from '../../hooks/useBandeja'
 
 interface Props {
@@ -42,7 +40,6 @@ export default function Sidebar({
   const { user, signOut } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
-  const { data: noLeidas = 0 } = useContadorNoLeidas(user?.id)
   const { data: hrBandeja = [] } = useBandeja(user)
 
   if (!user) return null
@@ -59,12 +56,6 @@ export default function Sidebar({
       badge: hrBandeja.length
     },
     { label: 'Hojas de Ruta', to: '/hojas-ruta', icono: FileText },
-    {
-      label: 'Notificaciones',
-      to: '/notificaciones',
-      icono: Bell,
-      badge: noLeidas
-    },
     ...(puedeConcluir
       ? [{ label: 'Reportes', to: '/reportes', icono: BarChart3 }]
       : [])
@@ -93,7 +84,6 @@ export default function Sidebar({
     navigate(to)
   }
 
-  // Item de menú (adaptado para colapsado/expandido)
   const MenuLink = ({ item }: { item: MenuItem }) => {
     const Icono = item.icono
     const activo = isActive(item.to)
@@ -128,21 +118,17 @@ export default function Sidebar({
           </>
         )}
 
-        {/* Badge en modo colapsado */}
         {colapsado && item.badge !== undefined && item.badge > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-accent-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
             {item.badge > 99 ? '99+' : item.badge}
           </span>
         )}
 
-        {/* Tooltip en modo colapsado */}
         {colapsado && (
           <span className="absolute left-full ml-3 px-2.5 py-1.5 bg-neutral-900 text-white text-xs rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-lg">
             {item.label}
             {item.badge !== undefined && item.badge > 0 && (
-              <span className="ml-1 text-accent-300">
-                ({item.badge})
-              </span>
+              <span className="ml-1 text-accent-300">({item.badge})</span>
             )}
             <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-neutral-900" />
           </span>
@@ -153,7 +139,6 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Overlay en móvil */}
       {abierto && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-fade-in"
@@ -161,7 +146,6 @@ export default function Sidebar({
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full bg-gradient-to-b from-primary-800 to-primary-900 text-white z-50 flex flex-col shadow-2xl transition-all duration-300 ${
           colapsado ? 'w-[72px]' : 'w-72'
@@ -175,7 +159,6 @@ export default function Sidebar({
             colapsado ? 'justify-center px-2 py-4' : 'px-4 py-4'
           }`}
         >
-          {/* Logo */}
           <Link
             to="/"
             className={`flex items-center ${
@@ -203,7 +186,6 @@ export default function Sidebar({
             )}
           </Link>
 
-          {/* Botón colapsar (solo desktop, al lado del logo) */}
           {!colapsado && (
             <button
               onClick={onToggleColapsar}
@@ -214,7 +196,6 @@ export default function Sidebar({
             </button>
           )}
 
-          {/* Botón cerrar en móvil */}
           {!colapsado && (
             <button
               onClick={onCerrar}
@@ -226,7 +207,6 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* Botón expandir (cuando está colapsado) - debajo del logo */}
         {colapsado && (
           <button
             onClick={onToggleColapsar}
@@ -278,7 +258,6 @@ export default function Sidebar({
             colapsado ? 'px-2' : 'px-3'
           }`}
         >
-          {/* Menu principal */}
           {!colapsado && (
             <p className="px-3 py-2 text-[10px] font-bold text-white/40 uppercase tracking-wider">
               Principal
@@ -289,7 +268,6 @@ export default function Sidebar({
             <MenuLink key={item.to} item={item} />
           ))}
 
-          {/* Menu admin */}
           {menuAdmin.length > 0 && (
             <>
               {!colapsado ? (
@@ -305,7 +283,6 @@ export default function Sidebar({
             </>
           )}
 
-          {/* Cerrar sesión */}
           {!colapsado ? (
             <p className="px-3 py-2 mt-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">
               Cuenta
@@ -323,7 +300,6 @@ export default function Sidebar({
             <LogOut className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
             {!colapsado && <span className="flex-1 text-left">Cerrar sesión</span>}
 
-            {/* Tooltip en modo colapsado */}
             {colapsado && (
               <span className="absolute left-full ml-3 px-2.5 py-1.5 bg-neutral-900 text-white text-xs rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-lg">
                 Cerrar sesión
@@ -333,7 +309,6 @@ export default function Sidebar({
           </button>
         </nav>
 
-        {/* Footer del sidebar */}
         {!colapsado && (
           <div className="px-5 py-3 border-t border-white/10">
             <p className="text-[10px] text-white/40 text-center">
