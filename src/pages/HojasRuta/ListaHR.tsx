@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   Plus,
   Search,
@@ -56,15 +56,20 @@ const ORDENES = [
 const POR_PAGINA = 10
 
 export default function ListaHR() {
+  const [searchParams] = useSearchParams()
+
+  // Leer filtro inicial desde la URL (cuando viene del Dashboard)
   const [busqueda, setBusqueda] = useState('')
-  const [estado, setEstado] = useState('')
+  const [estado, setEstado] = useState(searchParams.get('estado') || '')
   const [direccionId, setDireccionId] = useState('')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
   const [tipo, setTipo] = useState('')
   const [orden, setOrden] = useState('RECIENTES')
   const [pagina, setPagina] = useState(1)
-  const [mostrarFiltros, setMostrarFiltros] = useState(false)
+  const [mostrarFiltros, setMostrarFiltros] = useState(
+    !!searchParams.get('estado')
+  )
 
   const { data: direcciones = [] } = useDirecciones()
 
@@ -206,7 +211,9 @@ export default function ListaHR() {
             <button
               onClick={() => setMostrarFiltros(!mostrarFiltros)}
               className={`btn-outline flex items-center gap-2 ${
-                mostrarFiltros ? 'bg-primary-50 border-primary-500 text-primary-700' : ''
+                mostrarFiltros
+                  ? 'bg-primary-50 border-primary-500 text-primary-700'
+                  : ''
               }`}
             >
               <Filter className="w-4 h-4" />
@@ -223,7 +230,9 @@ export default function ListaHR() {
               disabled={isFetching}
               title="Actualizar"
             >
-              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`}
+              />
             </button>
           </div>
         </div>

@@ -2,17 +2,18 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuthContext } from './contexts/AuthContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import MiBandeja from './pages/MiBandeja'
 import ListaHR from './pages/HojasRuta/ListaHR'
 import NuevaHR from './pages/HojasRuta/NuevaHR'
 import DetalleHR from './pages/HojasRuta/DetalleHR'
 import Usuarios from './pages/Admin/Usuarios'
 import NuevoUsuario from './pages/Admin/NuevoUsuario'
+import Direcciones from './pages/Admin/Direcciones'
 import Gestiones from './pages/Admin/Gestiones'
 import Notificaciones from './pages/Notificaciones'
 import CambiarPassword from './pages/CambiarPassword'
 import MiPerfil from './pages/MiPerfil'
 import Reportes from './pages/Reportes/Reportes'
-import Direcciones from './pages/Admin/Direcciones'
 import ModalNotificaciones from './components/notificaciones/ModalNotificaciones'
 import { useRefetchOnFocus } from './hooks/useNotificaciones'
 
@@ -54,16 +55,17 @@ function AppRoutes() {
       <Routes>
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/" element={<Dashboard />} />
+        <Route path="/mi-bandeja" element={<MiBandeja />} />
         <Route path="/hojas-ruta" element={<ListaHR />} />
         <Route path="/hojas-ruta/nueva" element={<NuevaHR />} />
         <Route path="/hojas-ruta/:id" element={<DetalleHR />} />
         <Route path="/admin/usuarios" element={<Usuarios />} />
         <Route path="/admin/usuarios/nuevo" element={<NuevoUsuario />} />
+        <Route path="/admin/direcciones" element={<Direcciones />} />
         <Route path="/admin/gestiones" element={<Gestiones />} />
         <Route path="/notificaciones" element={<Notificaciones />} />
         <Route path="/mi-perfil" element={<MiPerfil />} />
         <Route path="/reportes" element={<Reportes />} />
-        <Route path="/admin/direcciones" element={<Direcciones />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

@@ -15,7 +15,6 @@ const STORAGE_KEY = 'hr-sidebar-colapsado'
 export default function Layout({ children, titulo }: Props) {
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
   const [sidebarColapsado, setSidebarColapsado] = useState(() => {
-    // Persistir estado en localStorage
     const guardado = localStorage.getItem(STORAGE_KEY)
     return guardado === 'true'
   })
@@ -81,6 +80,7 @@ export default function Layout({ children, titulo }: Props) {
 // Mapeo de rutas a títulos
 function obtenerTitulo(pathname: string): string {
   if (pathname === '/') return 'Inicio'
+  if (pathname === '/mi-bandeja') return 'Mi Bandeja'
   if (pathname === '/hojas-ruta') return 'Hojas de Ruta'
   if (pathname === '/hojas-ruta/nueva') return 'Nueva Hoja de Ruta'
   if (pathname.startsWith('/hojas-ruta/')) return 'Detalle de Hoja de Ruta'
@@ -89,6 +89,7 @@ function obtenerTitulo(pathname: string): string {
   if (pathname === '/mi-perfil') return 'Mi Perfil'
   if (pathname === '/admin/usuarios') return 'Usuarios'
   if (pathname === '/admin/usuarios/nuevo') return 'Nuevo Usuario'
+  if (pathname === '/admin/direcciones') return 'Direcciones'
   if (pathname === '/admin/gestiones') return 'Gestiones'
   return 'Sistema HR'
 }

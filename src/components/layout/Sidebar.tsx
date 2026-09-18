@@ -1,21 +1,23 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Home,
+  Inbox,
   FileText,
   Bell,
   BarChart3,
   Settings,
   Users,
   Calendar,
+  Building2,
   LogOut,
   X,
   ChevronRight,
   ChevronsLeft,
-  Building2,
   ChevronsRight
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useContadorNoLeidas } from '../../hooks/useNotificaciones'
+import { useBandeja } from '../../hooks/useBandeja'
 
 interface Props {
   abierto: boolean
@@ -41,6 +43,7 @@ export default function Sidebar({
   const location = useLocation()
   const navigate = useNavigate()
   const { data: noLeidas = 0 } = useContadorNoLeidas(user?.id)
+  const { data: hrBandeja = [] } = useBandeja(user)
 
   if (!user) return null
 
@@ -49,6 +52,12 @@ export default function Sidebar({
 
   const menuPrincipal: MenuItem[] = [
     { label: 'Inicio', to: '/', icono: Home },
+    {
+      label: 'Mi Bandeja',
+      to: '/mi-bandeja',
+      icono: Inbox,
+      badge: hrBandeja.length
+    },
     { label: 'Hojas de Ruta', to: '/hojas-ruta', icono: FileText },
     {
       label: 'Notificaciones',
@@ -130,6 +139,11 @@ export default function Sidebar({
         {colapsado && (
           <span className="absolute left-full ml-3 px-2.5 py-1.5 bg-neutral-900 text-white text-xs rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 shadow-lg">
             {item.label}
+            {item.badge !== undefined && item.badge > 0 && (
+              <span className="ml-1 text-accent-300">
+                ({item.badge})
+              </span>
+            )}
             <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-neutral-900" />
           </span>
         )}
@@ -164,7 +178,9 @@ export default function Sidebar({
           {/* Logo */}
           <Link
             to="/"
-            className={`flex items-center ${colapsado ? '' : 'gap-3 flex-1 min-w-0'}`}
+            className={`flex items-center ${
+              colapsado ? '' : 'gap-3 flex-1 min-w-0'
+            }`}
             onClick={onCerrar}
             title="Sistema HR - Papel Pampa"
           >

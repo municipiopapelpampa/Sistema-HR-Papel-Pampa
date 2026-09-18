@@ -28,6 +28,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
     color: COLORS.textBlack
   },
+  pageSinHeader: {
+    paddingTop: 24,
+    paddingBottom: 22,
+    paddingHorizontal: 16,
+    fontSize: 7,
+    fontFamily: 'Helvetica',
+    color: COLORS.textBlack
+  },
 
   // ============ ENCABEZADO ============
   header: {
@@ -165,6 +173,11 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     marginBottom: 4
   },
+  bloqueDestinatarioVacio: {
+    borderWidth: 0.7,
+    borderColor: COLORS.borderLight,
+    marginBottom: 6
+  },
   headerDestinatario: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
@@ -206,7 +219,8 @@ const styles = StyleSheet.create({
   destinatarioInfo: {
     padding: 4,
     borderBottomWidth: 0.7,
-    borderBottomColor: COLORS.border
+    borderBottomColor: COLORS.border,
+    minHeight: 16
   },
   destinatarioInfoTexto: {
     fontSize: 7
@@ -246,6 +260,12 @@ const styles = StyleSheet.create({
   instrucciones: {
     padding: 4,
     minHeight: 44,
+    borderBottomWidth: 0.7,
+    borderBottomColor: COLORS.border
+  },
+  instruccionesVacio: {
+    padding: 4,
+    minHeight: 48,
     borderBottomWidth: 0.7,
     borderBottomColor: COLORS.border
   },
@@ -329,11 +349,23 @@ interface Props {
   derivaciones: Derivacion[]
 }
 
+// Cuántos bloques van en cada hoja
+const BLOQUES_HOJA_1 = 3
+const BLOQUES_HOJA_EXTRA = 4
+const TOTAL_BLOQUES = 7
+
 export default function PDFHojaRuta({ hr, derivaciones }: Props) {
-  // Primera página: hasta 3 derivaciones
-  // Páginas extra: 3 derivaciones por página
-  const primeraPagina = derivaciones.slice(0, 3)
-  const paginasExtra = chunkArray(derivaciones.slice(3), 3)
+  // Preparar bloques: los que existen + relleno hasta llegar a 7
+  const bloquesHoja1 = prepararBloques(derivaciones, 0, BLOQUES_HOJA_1)
+  const bloquesHoja2 = prepararBloques(
+    derivaciones,
+    BLOQUES_HOJA_1,
+    BLOQUES_HOJA_2_TOTAL
+  )
+
+  // Derivaciones extra (si hay más de 7)
+  const derivacionesExtra = derivaciones.slice(TOTAL_BLOQUES)
+  const paginasExtra = chunkArray(derivacionesExtra, BLOQUES_HOJA_EXTRA)
 
   return (
     <Document
@@ -341,7 +373,7 @@ export default function PDFHojaRuta({ hr, derivaciones }: Props) {
       author="Gobierno Autónomo Municipal de Papel Pampa"
       subject="Control de Trámites Municipales"
     >
-      {/* Página 1 */}
+      {/* ============ PÁGINA 1 ============ */}
       <Page size="LETTER" style={styles.page}>
         <Encabezado />
         <DatosPrincipales hr={hr} />
@@ -373,10 +405,11 @@ export default function PDFHojaRuta({ hr, derivaciones }: Props) {
           </View>
         )}
 
-        {primeraPagina.map((deriv, index) => (
+        {/* 3 bloques de la hoja 1 */}
+        {bloquesHoja1.map((bloque, index) => (
           <BloqueDestinatario
-            key={deriv.id}
-            derivacion={deriv}
+            key={`h1-${index}`}
+            derivacion={bloque.derivacion}
             numeroOrden={index + 1}
           />
         ))}
@@ -384,15 +417,33 @@ export default function PDFHojaRuta({ hr, derivaciones }: Props) {
         <PiePagina />
       </Page>
 
-      {/* Páginas extra */}
+      {/* ============ PÁGINA 2 (SIN ENCABEZADO) ============ */}
+      <Page size="LETTER" style={styles.pageSinHeader}>
+        {/* 4 bloques de la hoja 2 */}
+        {bloquesHoja2.map((bloque, index) => (
+          <BloqueDestinatario
+            key={`h2-${index}`}
+            derivacion={bloque.derivacion}
+            numeroOrden={BLOQUES_HOJA_1 + index + 1}
+          />
+        ))}
+
+        <PiePagina />
+      </Page>
+
+      {/* ============ PÁGINAS EXTRA (si hay más de 7 derivaciones) ============ */}
       {paginasExtra.map((grupo, pageIndex) => (
-        <Page key={pageIndex} size="LETTER" style={styles.page}>
-          <Encabezado />
+        <Page key={pageIndex} size="LETTER" style={styles.pageSinHeader}>
           {grupo.map((deriv, index) => (
             <BloqueDestinatario
               key={deriv.id}
               derivacion={deriv}
-              numeroOrden={(pageIndex + 1) * 3 + index + 1}
+              numeroOrden={
+                TOTAL_BLOQUES +
+                pageIndex * BLOQUES_HOJA_EXTRA +
+                index +
+                1
+              }
             />
           ))}
           <PiePagina />
@@ -400,6 +451,30 @@ export default function PDFHojaRuta({ hr, derivaciones }: Props) {
       ))}
     </Document>
   )
+}
+
+// ============================================
+// HELPERS
+// ============================================
+
+// Constante para saber cuántos bloques van en la hoja 2
+const BLOQUES_HOJA_2_TOTAL = 4
+
+// Prepara los bloques: los que existen + relleno vacío
+function prepararBloques(
+  derivaciones: Derivacion[],
+  offset: number,
+  cantidad: number
+): Array<{ derivacion: Derivacion | null }> {
+  const bloques: Array<{ derivacion: Derivacion | null }> = []
+
+  for (let i = 0; i < cantidad; i++) {
+    const indiceReal = offset + i
+    const deriv = derivaciones[indiceReal] || null
+    bloques.push({ derivacion: deriv })
+  }
+
+  return bloques
 }
 
 // ============================================
@@ -541,7 +616,7 @@ function BloqueDestinatario({
   derivacion,
   numeroOrden
 }: {
-  derivacion: Derivacion
+  derivacion: Derivacion | null
   numeroOrden: number
 }) {
   const ordinales = [
@@ -558,6 +633,85 @@ function BloqueDestinatario({
   ]
   const ordinal = ordinales[numeroOrden - 1] || `${numeroOrden}°`
 
+  // Si NO hay derivación → bloque vacío con estructura para llenar a mano
+  if (!derivacion) {
+    return (
+      <View style={styles.bloqueDestinatarioVacio} wrap={false}>
+        <View style={styles.headerDestinatario}>
+          <View style={styles.headerDestinatarioLabel}>
+            <Text>{ordinal} DESTINATARIO:</Text>
+          </View>
+          <View style={styles.headerDestinatarioCampo}>
+            <Text style={styles.headerDestinatarioLabelMini}>
+              N° de Registro Interno:
+            </Text>
+            <Text style={styles.headerDestinatarioValor}>-</Text>
+          </View>
+          <View style={styles.headerDestinatarioCampo}>
+            <Text style={styles.headerDestinatarioLabelMini}>
+              Fecha de Ingreso
+            </Text>
+            <Text style={styles.headerDestinatarioValor}>__/__/____</Text>
+          </View>
+          <View style={styles.headerDestinatarioCampo}>
+            <Text style={styles.headerDestinatarioLabelMini}>
+              Fecha de Remisión
+            </Text>
+            <Text style={styles.headerDestinatarioValor}>__/__/____</Text>
+          </View>
+          <View style={styles.headerDestinatarioCampoUltimo}>
+            <Text style={styles.headerDestinatarioLabelMini}>Hora</Text>
+            <Text style={styles.headerDestinatarioValor}>__:__</Text>
+          </View>
+        </View>
+
+        {/* Espacio para escribir destinatario */}
+        <View style={styles.destinatarioInfo}>
+          <Text style={{ fontSize: 6, color: '#999' }}>
+            (Destinatario){'\n'}
+          </Text>
+        </View>
+
+        {/* Checkboxes vacíos */}
+        <View style={styles.checkboxesHorizontal}>
+          <CheckboxHorizontal label="Original" checked={false} />
+          <CheckboxHorizontal label="Urgente" checked={false} />
+          <CheckboxHorizontal label="Copia" checked={false} />
+          <CheckboxHorizontal label="Fax" checked={false} />
+        </View>
+
+        {/* Instrucciones vacías */}
+        <View style={styles.instruccionesVacio}>
+          <Text style={styles.instruccionesLabel}>INSTRUCCIONES:</Text>
+        </View>
+
+        {/* Firma + CITE vacíos */}
+        <View style={styles.firmaRow}>
+          <View style={styles.firmaCol}>
+            <View style={styles.firmaLinea}>
+              <Text style={styles.firmaLabel}>FIRMA</Text>
+            </View>
+            <View style={{ marginTop: 4 }}>
+              <Text style={styles.firmaDatos}>Nombre: </Text>
+              <Text style={styles.firmaDatos}>Cargo: </Text>
+            </View>
+          </View>
+
+          <View style={styles.firmaColRight}>
+            <Text style={styles.firmaDatos}>Respondiendo con: </Text>
+            <Text style={styles.firmaDatos}>CITE: </Text>
+            <Text style={styles.firmaDatos}>Fecha: </Text>
+
+            <View style={styles.selloBox}>
+              <Text style={styles.selloTexto}>(Espacio para sello)</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    )
+  }
+
+  // Bloque CON datos (derivación existente)
   return (
     <View style={styles.bloqueDestinatario} wrap={false}>
       <View style={styles.headerDestinatario}>
@@ -573,7 +727,9 @@ function BloqueDestinatario({
           </Text>
         </View>
         <View style={styles.headerDestinatarioCampo}>
-          <Text style={styles.headerDestinatarioLabelMini}>Fecha de Ingreso</Text>
+          <Text style={styles.headerDestinatarioLabelMini}>
+            Fecha de Ingreso
+          </Text>
           <Text style={styles.headerDestinatarioValor}>
             {derivacion.fecha_ingreso
               ? formatearFecha(derivacion.fecha_ingreso)
