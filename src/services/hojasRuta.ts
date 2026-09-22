@@ -8,6 +8,29 @@ import type {
 } from '../types'
 
 // ============================================
+// TIPOS DE FILTROS
+// ============================================
+export interface FiltrosHR {
+  busqueda?: string
+  estado?: string
+  direccionId?: string
+  fechaDesde?: string
+  fechaHasta?: string
+  tipo?: 'ORIGINAL' | 'URGENTE' | 'COPIA' | 'FAX'
+  orden?: 'RECIENTES' | 'ANTIGUAS' | 'NUMERO_ASC' | 'NUMERO_DESC'
+  pagina?: number
+  porPagina?: number
+}
+
+export interface ResultadoListaHR {
+  datos: HojaRutaConRelaciones[]
+  total: number
+  pagina: number
+  porPagina: number
+  totalPaginas: number
+}
+
+// ============================================
 // OBTENER GESTIÓN ACTIVA
 // ============================================
 export async function obtenerGestionActiva(): Promise<Gestion | null> {
@@ -33,7 +56,9 @@ export async function generarNumeroHR(gestionId: string) {
   })
 
   if (error || !data || data.length === 0) {
-    throw new Error('No se pudo generar el número de HR: ' + (error?.message || 'sin datos'))
+    throw new Error(
+      'No se pudo generar el número de HR: ' + (error?.message || 'sin datos')
+    )
   }
 
   return data[0] as { numero_correlativo: string; numero_unico: string }
@@ -51,7 +76,10 @@ export async function crearHojaRuta(
     // 1. Obtener gestión activa
     const gestion = await obtenerGestionActiva()
     if (!gestion) {
-      return { data: null, error: 'No hay una gestión activa. Contacta al administrador.' }
+      return {
+        data: null,
+        error: 'No hay una gestión activa. Contacta al administrador.'
+      }
     }
 
     // 2. Generar número correlativo
@@ -62,21 +90,39 @@ export async function crearHojaRuta(
     const fechaRecepcion = ahora.toISOString().split('T')[0]
     const horaRecepcion = ahora.toTimeString().split(' ')[0]
 
-    // Determinar datos del destinatario
+    // 4. Determinar datos del destinatario
     let destinatarioNombre = form.destinatario_nombre || ''
     let destinatarioCargo = form.destinatario_cargo || ''
 
-    // Si es por dirección, autocompletar
+    // Si es por dirección → autocompletar con datos de la dirección
     if (form.tipo_destinatario === 'DIRECCION') {
       const { data: dir } = await supabase
         .from('direcciones')
-        .select('nombre')
+        .select('nombre, codigo')
         .eq('id', form.destinatario_direccion_id)
         .single()
-      if (dir) destinatarioNombre = dir.nombre
+
+      if (dir) {
+        destinatarioNombre = dir.nombre
+        destinatarioCargo = `Responsable de ${dir.codigo}`
+      }
     }
 
-    // 4. Insertar HR
+    // Si es por persona específica → buscar datos de la persona
+    if (form.tipo_destinatario === 'PERSONA' && form.destinatario_usuario_id) {
+      const { data: usuarioDest } = await supabase
+        .from('usuarios')
+        .select('nombre_completo, cargo')
+        .eq('id', form.destinatario_usuario_id)
+        .single()
+
+      if (usuarioDest) {
+        destinatarioNombre = usuarioDest.nombre_completo
+        destinatarioCargo = usuarioDest.cargo || ''
+      }
+    }
+
+    // 5. Insertar HR
     const { data: hr, error: hrError } = await supabase
       .from('hojas_ruta')
       .insert({
@@ -101,7 +147,9 @@ export async function crearHojaRuta(
         estado: 'PENDIENTE_CONFIRMACION',
         direccion_actual_id: form.destinatario_direccion_id,
         usuario_actual_id:
-          form.tipo_destinatario === 'PERSONA' ? form.destinatario_usuario_id : null
+          form.tipo_destinatario === 'PERSONA'
+            ? form.destinatario_usuario_id
+            : null
       })
       .select()
       .single()
@@ -110,7 +158,7 @@ export async function crearHojaRuta(
       return { data: null, error: 'Error al crear HR: ' + hrError?.message }
     }
 
-    // 5. Crear la primera derivación
+    // 6. Crear la primera derivación
     await supabase.from('derivaciones').insert({
       hoja_ruta_id: hr.id,
       numero_orden: 1,
@@ -118,7 +166,9 @@ export async function crearHojaRuta(
       destinatario_cargo: destinatarioCargo,
       destinatario_direccion_id: form.destinatario_direccion_id,
       destinatario_usuario_id:
-        form.tipo_destinatario === 'PERSONA' ? form.destinatario_usuario_id : null,
+        form.tipo_destinatario === 'PERSONA'
+          ? form.destinatario_usuario_id
+          : null,
       tipo_destinatario: form.tipo_destinatario,
       fecha_ingreso: fechaRecepcion,
       fecha_remision: fechaRecepcion,
@@ -132,7 +182,7 @@ export async function crearHojaRuta(
       estado: 'PENDIENTE'
     })
 
-    // 6. Registrar en historial
+    // 7. Registrar en historial
     await supabase.from('historial').insert({
       hoja_ruta_id: hr.id,
       usuario_id: usuarioId,
@@ -144,7 +194,7 @@ export async function crearHojaRuta(
       }
     })
 
-    // 7. Crear notificaciones para los destinatarios
+    // 8. Crear notificaciones para los destinatarios
     await crearNotificacionesDestinatarios(hr.id, numero_unico, form)
 
     return { data: hr, error: null }
@@ -165,10 +215,8 @@ async function crearNotificacionesDestinatarios(
   let usuariosDestino: { id: string }[] = []
 
   if (form.tipo_destinatario === 'PERSONA' && form.destinatario_usuario_id) {
-    // Solo al usuario específico
     usuariosDestino = [{ id: form.destinatario_usuario_id }]
   } else {
-    // Todos los usuarios de la dirección
     const { data } = await supabase
       .from('usuario_direcciones')
       .select('usuario_id')
@@ -195,29 +243,6 @@ async function crearNotificacionesDestinatarios(
 }
 
 // ============================================
-// TIPOS DE FILTROS
-// ============================================
-export interface FiltrosHR {
-  busqueda?: string
-  estado?: string
-  direccionId?: string
-  fechaDesde?: string
-  fechaHasta?: string
-  tipo?: 'ORIGINAL' | 'URGENTE' | 'COPIA' | 'FAX'
-  orden?: 'RECIENTES' | 'ANTIGUAS' | 'NUMERO_ASC' | 'NUMERO_DESC'
-  pagina?: number
-  porPagina?: number
-}
-
-export interface ResultadoListaHR {
-  datos: HojaRutaConRelaciones[]
-  total: number
-  pagina: number
-  porPagina: number
-  totalPaginas: number
-}
-
-// ============================================
 // LISTAR HOJAS DE RUTA CON FILTROS Y PAGINACIÓN
 // ============================================
 export async function listarHojasRuta(
@@ -228,7 +253,6 @@ export async function listarHojasRuta(
   const desde = (pagina - 1) * porPagina
   const hasta = desde + porPagina - 1
 
-  // Query base
   let query = supabase
     .from('hojas_ruta')
     .select(
@@ -242,7 +266,6 @@ export async function listarHojasRuta(
       { count: 'exact' }
     )
 
-  // Filtros
   if (filtros?.busqueda && filtros.busqueda.trim()) {
     const b = filtros.busqueda.trim()
     query = query.or(
@@ -271,7 +294,6 @@ export async function listarHojasRuta(
   if (filtros?.tipo === 'COPIA') query = query.eq('tipo_copia', true)
   if (filtros?.tipo === 'FAX') query = query.eq('tipo_fax', true)
 
-  // Orden
   switch (filtros?.orden) {
     case 'ANTIGUAS':
       query = query.order('created_at', { ascending: true })
@@ -288,20 +310,13 @@ export async function listarHojasRuta(
       break
   }
 
-  // Paginación
   query = query.range(desde, hasta)
 
   const { data, error, count } = await query
 
   if (error) {
     console.error('Error al listar HR:', error)
-    return {
-      datos: [],
-      total: 0,
-      pagina,
-      porPagina,
-      totalPaginas: 0
-    }
+    return { datos: [], total: 0, pagina, porPagina, totalPaginas: 0 }
   }
 
   const total = count || 0
@@ -314,22 +329,26 @@ export async function listarHojasRuta(
     porPagina,
     totalPaginas
   }
-} 
+}
 
 // ============================================
 // OBTENER HR POR ID
 // ============================================
-export async function obtenerHojaRuta(id: string): Promise<HojaRutaConRelaciones | null> {
+export async function obtenerHojaRuta(
+  id: string
+): Promise<HojaRutaConRelaciones | null> {
   const { data, error } = await supabase
     .from('hojas_ruta')
-    .select(`
+    .select(
+      `
       *,
       remitente:usuarios!hojas_ruta_remitente_usuario_id_fkey(id, nombre_completo, email, cargo),
       direccion_actual:direcciones!hojas_ruta_direccion_actual_id_fkey(id, nombre, codigo),
       destinatario_direccion:direcciones!hojas_ruta_destinatario_direccion_id_fkey(id, nombre, codigo),
       documentos:documentos(*),
       gestion:gestiones!hojas_ruta_gestion_id_fkey(id, anio, estado)
-    `)
+    `
+    )
     .eq('id', id)
     .single()
 

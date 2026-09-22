@@ -21,6 +21,8 @@ const schema = z.object({
   tipo_destinatario: z.enum(['DIRECCION', 'PERSONA']),
   destinatario_direccion_id: z.string().uuid('Selecciona una dirección'),
   destinatario_usuario_id: z.string().optional(),
+  destinatario_nombre: z.string().optional(),
+  destinatario_cargo: z.string().optional(),
   instrucciones: z.string().min(5, 'Mínimo 5 caracteres'),
   tipo_original: z.boolean(),
   tipo_urgente: z.boolean(),
@@ -68,7 +70,7 @@ export default function NuevaHR() {
     }
   })
 
-  // ✅ Autocompletar datos del remitente cuando el usuario esté disponible
+  // Autocompletar datos del remitente cuando el usuario esté disponible
   useEffect(() => {
     if (user) {
       reset({
@@ -87,6 +89,7 @@ export default function NuevaHR() {
 
   const tipoDest = watch('tipo_destinatario')
   const dirDestId = watch('destinatario_direccion_id')
+  const usuarioDestId = watch('destinatario_usuario_id')
 
   const { data: usuariosDir = [] } = useUsuariosDeDireccion(
     tipoDest === 'PERSONA' ? dirDestId : undefined
@@ -97,11 +100,22 @@ export default function NuevaHR() {
     if (tipoDest === 'DIRECCION' && dirDestId) {
       const dir = direcciones.find((d) => d.id === dirDestId)
       if (dir) {
-        setValue('destinatario_nombre' as any, dir.nombre)
-        setValue('destinatario_cargo' as any, `Responsable de ${dir.codigo}`)
+        setValue('destinatario_nombre', dir.nombre)
+        setValue('destinatario_cargo', `Responsable de ${dir.codigo}`)
       }
     }
   }, [dirDestId, tipoDest, direcciones, setValue])
+
+  // Autocompletar destinatario cuando se elige persona específica
+  useEffect(() => {
+    if (tipoDest === 'PERSONA' && usuarioDestId) {
+      const usuario = usuariosDir.find((u) => u.id === usuarioDestId)
+      if (usuario) {
+        setValue('destinatario_nombre', usuario.nombre_completo)
+        setValue('destinatario_cargo', usuario.cargo || '')
+      }
+    }
+  }, [usuarioDestId, tipoDest, usuariosDir, setValue])
 
   const crearMutation = useCrearHojaRuta()
 
@@ -131,6 +145,8 @@ export default function NuevaHR() {
           tipo_destinatario: data.tipo_destinatario as TipoDestinatario,
           destinatario_direccion_id: data.destinatario_direccion_id,
           destinatario_usuario_id: data.destinatario_usuario_id,
+          destinatario_nombre: data.destinatario_nombre,
+          destinatario_cargo: data.destinatario_cargo,
           tipo_original: data.tipo_original,
           tipo_urgente: data.tipo_urgente,
           tipo_copia: data.tipo_copia,
@@ -227,7 +243,7 @@ export default function NuevaHR() {
                 />
               </div>
               <div>
-                <label className="label-field">N° de Hojas *</label>
+                <label className="label-field">N° de Fojas *</label>
                 <input
                   type="number"
                   min={1}
@@ -246,7 +262,6 @@ export default function NuevaHR() {
           {/* BLOQUE: Remitente */}
           <div className="card p-6">
             <SeccionTitulo>Datos del Remitente</SeccionTitulo>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label-field">Nombre *</label>
@@ -281,7 +296,6 @@ export default function NuevaHR() {
                 )}
               </div>
             </div>
-
             <p className="text-xs text-neutral-500 mt-3 flex items-start gap-1.5">
               <span>💡</span>
               <span>
@@ -382,6 +396,29 @@ export default function NuevaHR() {
                 )}
               </div>
             )}
+
+            {/* Vista previa del destinatario */}
+            {(tipoDest === 'DIRECCION' && dirDestId) ||
+            (tipoDest === 'PERSONA' && usuarioDestId) ? (
+              <div className="mt-4 p-3 bg-primary-50 border border-primary-200 rounded-lg">
+                <p className="text-xs font-semibold text-primary-700 uppercase tracking-wide mb-1">
+                  Destinatario seleccionado:
+                </p>
+                <p className="font-semibold text-neutral-900">
+                  {tipoDest === 'DIRECCION'
+                    ? direcciones.find((d) => d.id === dirDestId)?.nombre
+                    : usuariosDir.find((u) => u.id === usuarioDestId)
+                        ?.nombre_completo}
+                </p>
+                <p className="text-sm text-neutral-600">
+                  {tipoDest === 'DIRECCION'
+                    ? `Responsable de ${
+                        direcciones.find((d) => d.id === dirDestId)?.codigo
+                      }`
+                    : usuariosDir.find((u) => u.id === usuarioDestId)?.cargo}
+                </p>
+              </div>
+            ) : null}
           </div>
 
           {/* BLOQUE: Tipo de envío */}
@@ -465,11 +502,7 @@ export default function NuevaHR() {
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              disabled={enviando}
-              className="btn-primary"
-            >
+            <button type="submit" disabled={enviando} className="btn-primary">
               {enviando ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
